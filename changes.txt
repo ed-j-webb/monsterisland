@@ -1,0 +1,26 @@
+Change Log
+----------
+
+1.0.0 - Initial release.
+
+1.1.0 - Load from KLN files.
+
+1.2.0 - Load from EditMI files.
+
+1.3.0 - Addition of Flags. Setting and reading from KLN and EditMI files.
+      - BUGFIX Not handling squares with no terrain correctly.
+      
+1.4.0 - Load from KAOS files.
+
+1.5.0 - Start of the turn digester. Can input scrying data from turn on to map
+
+1.6.0 - Compare map files using the DiffMapModel
+
+1.6.1 - Fix bug in MapText that was preventing the form from being cancelled.
+      - Correct Kadda vine entry.
+      - Add the Save differences action
+      
+1.6.2 - Fix bug in the save map action when filename is missing suffix
+
+2.0.0 - Removed scrying action and replaced with extract action
+      - Fix bug in save actions when filename is missing suffix

@@ -1,0 +1,112 @@
+<project name="Java Island Mapper" basedir=".">
+
+	<target name="init">
+  		<tstamp/>
+
+	    <property file="./build.properties"/>
+
+		<!-- Libraries this project depends on -->
+		<property name="dir.lib" location="./lib"/>
+
+		<!-- Config this project depends on -->
+		<property name="dir.config" location="./config"/>
+
+		<!-- Location for the Documentation -->
+		<property name="dir.doc" value="./doc"/>
+
+		<!-- Location for the Java API Documentation -->
+		<property name="dir.apidoc" value="./apidoc"/>
+
+		<!-- Location of the source code -->
+		<property name="dir.src" value="./src"/>
+		
+		<!-- Location of the data files -->
+		<property name="dir.data" value="./data"/>
+		
+		<!-- Location for the compiled code -->
+  		<property name="dir.build" value="./build"/>
+
+		<!-- Location for the released code -->
+  		<property name="dir.dist" value="./dist"/>
+
+		<property file="./project.properties"/>
+
+		<!-- Classpath for javac and javadoc -->
+		<path id="classpath">
+        	<pathelement path="${class.path}"/>
+		</path>
+
+		<!-- Location and name of the jar file -->
+		<property name="file.jar" value="${dir.dist}/${app.name}-${app.version}.jar"/>
+	</target>
+
+  	<target name="clean" depends="init" description="Deletes contents of build and distribution folders">
+    	<delete dir="${dir.build}"/>
+    	<delete dir="${dir.apidoc}"/>
+    	<delete dir="${dir.dist}"/>
+  	</target>
+
+	<target name="compile" depends="init" description="Compiles the source code files into the build directory">
+    	<mkdir dir="${dir.build}"/>
+    	<javac srcdir="${dir.src}" destdir="${dir.build}" debug="on" optimize="off" deprecation="off" target="1.7" includeantruntime="false">
+			<classpath refid="classpath"/>
+		</javac>
+        <copy todir="${dir.build}">
+            <fileset dir="${dir.src}">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+  	</target>
+    
+	<target name="javadoc" depends="init" description="Compiles the Java API documentation into the doc directory">
+    	<mkdir dir="${dir.apidoc}"/>
+    	<javadoc sourcepath="${dir.src}" destdir="${dir.apidoc}" private="true" windowtitle="${app.title} ${app.version}">
+    		<classpath refid="classpath"/>
+		</javadoc>		
+  	</target>
+
+	<target name="release" depends="init, compile, javadoc, create-start-script" description="Creates the Library's jar file and copies all associated files to the dist folder">
+    	<mkdir  dir="${dir.dist}"/>
+		<jar destfile="${file.jar}">
+			<manifest>
+			    <attribute name="Main-Class" value="net.edwebb.jim.control.MapController" />
+			</manifest>			
+			<fileset dir="${dir.build}"/>
+		</jar>
+		
+		<copy todir="${dir.dist}/apidocs">
+			<fileset dir="${dir.apidoc}"/>
+		</copy>
+		
+        <!--
+		<copy todir="${dir.dist}/config">
+            <fileset dir="${dir.config}"/>
+        </copy>
+		-->
+		
+        <copy todir="${dir.dist}/data">
+            <fileset dir="${dir.data}"/>
+        </copy>
+
+		<!--
+		<copy todir="${dir.dist}/docs">
+			<fileset dir="${dir.doc}">
+				<include name="*.pdf"/>
+				<include name="*.txt"/>
+			</fileset>
+		</copy>
+		-->
+		
+		<!--
+		<copy todir="${dir.dist}/lib">
+			<fileset dir="${dir.lib}"/>
+		</copy>
+		-->
+  	</target>
+
+	<target name="create-start-script">
+		<echo file="${dir.dist}/${app.name}.bat" message="start javaw ${app.java.args} -jar ${app.name}-${app.version}.jar"/>
+		<echo file="${dir.dist}/${app.name}.sh" message="#!/bin/bash&#10;javaw ${app.java.args} -jar ${app.name}-${app.version}.jar"/>
+	</target>
+
+</project>

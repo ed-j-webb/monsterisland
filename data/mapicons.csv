@@ -1,0 +1,124 @@
+-184401185;;Top Left
+931203023;;Top Right
+1500242783;;Bottom Left
+-766887247;;Bottom Right
+-968289288;A;Sea
+-26157282;A;River
+9335186;C;Crystal Hills
+-1385777013;H;High Hills
+-1921212098;J;Jungle
+-1709390126;L;Low Hills
+-1664163977;N;High Jungle
+-302361650;P;Sand and Palms
+1237893572;S;Swamp
+0;W;Wasteland
+-1138042563;X;Sticks
+-485641149;;N Arrow
+-1021118836;;NE Arrow
+1737120158;;E Arrow
+537980458;;SE Arrow
+1594373571;;S Arrow
+1113785104;;SW Arrow
+153295413;;W Arrow
+-685605491;;NW Arrow
+-1668714561;;Camp
+-1434452023;;Inn Stay
+0;A;A (Direction)
+0;A;A (Direction)
+0;A;C (Direction)
+1322091061;H;H (Direction)
+738952083;J;J (Direction)
+-1430471476;L;L (Direction)
+1856863790;N;N (Direction)
+1594214406;P;P (Direction)
+-557182091;S;S (Direction)
+0;W;W (Direction)
+1100701837;X;X (Direction)
+-1164920431;;Creature
+-638433062;;Far Exotica
+1749580127;;Far Inn
+-68492758;;Far Post
+112760371;;Geyser
+1552731727;;Jossman Imperial Bank
+1809128226;;Kabuki Prayer Stone
+-1251140156;;King Ock Mushroom
+-1008230981;;Koma Den
+875278243;;Loggerhead Camp
+-1211020951;;Mine Shaft
+2025449979;;Question Mark
+-1344306090;;Railway Station
+-1390266247;;Shroud Obelisk
+1652802879;;Stone Crypt
+114710825;;Sunken Graveyard
+503281894;;Temple
+406607492;;Temple Ruins
+943755708;;Tomb of Mumundus
+-226056988;;Tower
+-1304607450;;Town Square
+0;A;A (Location/Creature)
+0;A;A (Location/Creature)
+0;C;C (Location/Creature)
+-1868562970;H;H (Location/Creature)
+254813511;J;J (Location/Creature)
+-1670622332;L;L (Location/Creature)
+1348177666;N;N (Location/Creature)
+-409266225;P;P (Location/Creature)
+1725638492;S;S (Location/Creature)
+0;W;W (Location/Creature)
+-678007529;X;X (Location/Creature)
+-1022804560;;Plant
+0;A;A (Plant)
+0;A;A (Plant)
+0;C;C (Plant)
+1625549722;H;H (Plant)
+1987073065;J;J (Plant)
+1206169239;L;L (Plant)
+-605681870;N;N (Plant)
+-499850815;P;P (Plant)
+-815231263;S;S (Plant)
+0;W;W (Plant)
+292585987;X;X (Plant)
+-642385530;%TRL;Trail W-E (TL)
+-1425946586;%TRL;Trail W-E (TR)
+-2015875355;%TRL;Trail N-S (BL)
+2123949924;%TRL;Trail N-S (TL)
+-242476922;%TRL;Trail SW-NE (TR)
+-1035830094;%TRL;Trail SW-NE (BL)
+-511903803;%TRL;Trail SW-NE (BR)
+920849030;%TRL;Trail NW-SE (TL)
+67672716;%TRL;Trail NW-SE (BR)
+-815658538;%TRL;Trail Nw-SE (TR)
+-315598533;%RLW;Railway N-S (TL/BL)
+644821141;%RLW;Railway N-SSW (TL)
+1345629335;%RLW;Railway NNE-SW (BL)
+-1468371537;%RLW;Railway NE-SSW (TL)
+276279119;%RLW;Railway NNE-S (BL)
+579437998;%RLW;Railway NNE-S (BR)
+1973279965;%RLW;Railway N-SSE (TL)
+2122626317;%RLW;Railway N-SSE (TR)
+190059587;%RLW;Railway NNW-SE (BR)
+-263855014;%RLW;Railway NW-SSE (TL)
+-1071712645;%RLW;Railway NNW-S (BL)
+1013823705;;Railway Bridge (TL)
+823358366;;Railway Bridge (TR)
+-788310306;;Railway Bridge (BL)
+814223824;;Railway Bridge (BR)
+1938099838;;Troll Bridge (TL)
+1502383151;;Troll Bridge (TR)
+1269131067;;Troll Bridge (BL)
+-1595436638;;Troll Bridge (BR)
+-1117323181;;Tower Ruins
+487814093;;Tainted Hollow
+-1015125037;;Tomb of Mumi
+371521937;;Shrine of Fuvah
+547781052;;Hillock
+1065899182;;Ancient Graveyard
+-176551288;;Small Cave
+429068473;;Small Quarry
+1825920848;;Large Cave
+-1141755923;;Survey Logpost
+1512178186;;Far Forge?
+472464500;;Large Quarry
+-909236479;;Great Cave
+1289803524;;Fort Ruins
+-309165004;;Fort

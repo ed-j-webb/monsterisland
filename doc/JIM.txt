@@ -1,0 +1,106 @@
+Java Island Mapper
+==================
+
+Data Files
+----------
+
+JIM is completely configurable. You can provide your own lists of creatures, plants and
+locations and it will use these to display your map. All data files are stored in the
+data subfolder and their associated images in the data/images subfolder.
+
+The format of these files is as follows:
+
+creatures.csv - contains a list of creatures. Each line of the file contains one creature
+The format is [creature number],[creature name]
+The creature number must be between 101 and 999
+the creature name cannot contain a comma
+
+locations.csv - contains a list of locations. Each line of the file contains one location
+The format is [location code],[location name],[location icon]
+The location code must contain three upper case characters (A-Z).
+the location name cannot contain a comma
+The location icon must be the name of an image file in the data/images subfolder that is 26x26 pixels in size.
+
+plants.csv - contains a list of plants. Each line of the file contains one plant
+The format is [plant code],[plant name]
+The plant code must contain three lower case characters (a-z).
+the plant name cannot contain a comma
+
+terrain.csv - contains a list of terrain. Each line of the file contains one terrain
+the format is [terrain code],[terrain name],[background colour],[text colour],[background image]
+The terrain code must contain one upper case character (A-Z)
+the terrain name cannot contain a comma
+the background and text colour should be a css style colour code starting with a hash symbol (#) and containing 6 hex digits (0-f)
+The background image must be the name of an image file in the data/images subfolder that is 26x26 pixels in size.
+
+coordinates.csv - contains a list of co-ordinate origins. Each line of the file contains one co-ordinate.
+These position the origin of the co-ordinates in relation to an arbitrary point in the sea to the South-West of
+Monster Island. This is used to relate different co-ordinate origins to each other.
+The format is [x],[y],[origin name]
+x and y must be positive numbers and correspond the to number of squares East and North of the arbitrary point
+the origin name cannot contain a comma
+
+flags.csv - contains a list of flags. Each line of the file contains one flag. These flags can be used to mark squares on the
+map with additional information.
+The format is [flag number],[flag name],[distance],[flag icon]
+The flag number must be betwen 0 and 7
+The flag name cannot contain a comma
+The distance is a positive number and is the number of squares that the flag affects (e.g. an Orb of seeing can show the contents of
+squares up to 2 squares away so has a distance of 3 (the Monster's current square and the tow squares in any direction).
+The flag icon must be the name of an image file in the data/images subfolder that is 13x13 pixels in size.
+
+The JIM Map File
+----------------
+
+The format of the jim map file is deliberately as simple and compact as possible. All multibyte numbers are stored in big-endian form.
+All x and y co-ordinates are offset from the top left of the map
+
+bytes     content
+-------   -------
+  0-  1   The width of the map
+  2-  3   The height of the map
+  4-  5   The y co-ordinate of the top-left square
+  6-  7   The x co-ordinate of the top-left square
+  8-  9   The y co-ordinate of the selected square
+ 10- 11   The x co-ordinate of the selected square
+ 12+      Data blocks
+ 
+The data blocks may contain square data, notes and the co-ordinate system for the map
+ 
+The data block is of variable length but always starts with
+
+  0-  1   The x co-ordinate of the square
+  2-  3   The y co-ordinate of the square
+  4       If this number is positive then the block is a square data block
+          If this number is negative then the block is a note or co-ordinate block
+  
+The square data block contains
+  0-  1   The x co-ordinate of the square
+  2-  3   The y co-ordinate of the square
+  4       The number of features in the square (including the terrain/flag block)
+  5-  6   Terrain/Flag block
+  7+      Feature block
+
+Terrain/Flag block
+
+  0       The square's flags. The position of the bits set in this byte correspond to the number of the flag
+  1       The square's terrain. The byte contains the ASCII representation of the terrain code (A-Z)
+  
+The Feature block is 2 bytes long and may contain
+  
+Creature block
+  0-  1   The creature's number.
+  
+Location/Plant block
+  0-  1   If the highest bit of the first byte is set then this block contains a location, otherwise a plant.
+          The remaining 15 bits represent the characters in the feature's code (5 bits per character). Each 5
+		  bits represent the position of the letter in the alphabet (A/a = 0, B/b = 1). If the feature is a 
+		  location the characters are upper case, if a plant then lower.
+
+The note/co-ordinate data block contains
+  0-  1   The x co-ordinate of the square
+  2-  3   The y co-ordinate of the square
+  4       The length of the text stored as a negative number
+  5+      The note text. If this starts with ASCII character 26 then the x and y co-ordinates are the offset from
+          the arbitrary point. The remains of the string (minus the first character) is the name of the co-ordinate system
+
