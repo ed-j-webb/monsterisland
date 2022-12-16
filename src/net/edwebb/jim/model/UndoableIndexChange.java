@@ -5,8 +5,8 @@ import java.awt.Point;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-import net.edwebb.jim.data.Feature;
 import net.edwebb.jim.data.MapIndex;
+import net.edwebb.mi.data.Feature;
 
 public class UndoableIndexChange extends UndoableChange {
 

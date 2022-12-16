@@ -12,6 +12,8 @@ import java.util.Map;
 
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.UndoableIndexChange;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Feature;
 
 /**
  * An index of features and notes on the map that can be used to quickly search for features or notes.
@@ -55,7 +57,7 @@ public class MapIndex {
 				if (sqr != null && sqr.length > 1) {
 					Point pt = new Point(p);
 					for (int z = 1; z < sqr.length; z++) {
-						Feature f = FeatureData.getInstance().getFeature(sqr[z]);
+						Feature f = DataStore.getInstance().getFeatureById(sqr[z]);
 						if (f != null) {
 							addPoint(f, pt);
 						}

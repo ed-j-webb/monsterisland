@@ -1,6 +1,9 @@
 package net.edwebb.mi.extract;
 
-import net.edwebb.mi.db.DataStore;
+import net.edwebb.mi.data.Creature;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Location;
+import net.edwebb.mi.data.Plant;
 
 public class Sighting {
 
@@ -27,28 +30,42 @@ public class Sighting {
 	public void createCode() {
 		StringBuffer sb = new StringBuffer();
 		if (type.equals("Unknown")) {
-			if (DataStore.getInstance().getPlantCode(thing) != null) {
+			if (DataStore.getInstance().getPlant(thing) != null) {
 				type = "Plant";
-			} else if (DataStore.getInstance().getPlaceCode(thing) != null) {
+			} else if (DataStore.getInstance().getLocation(thing) != null) {
 				type = "Location";
 			} else if (thing.equals("Trapped Pit")) {
 				type = "Location";
-				thing = "Deep Pit";
 			} else {
 				type = "Creature";
 			}
 		}
 		if (type.equals("Creature")) {
-			sb.append("@");
-			sb.append(DataStore.getInstance().getCreatureID(thing));
+			Creature creature = DataStore.getInstance().getCreature(thing);
+			if (creature != null) {
+				sb.append("@");
+				sb.append(creature.getCode());
+			}
 		} else if (type.equals("Plant")) {
-			sb.append("$");
-			sb.append(DataStore.getInstance().getPlantCode(thing));
+			Plant plant = DataStore.getInstance().getPlant(thing);
+			if (plant != null) {
+				sb.append("$");
+				sb.append(plant.getCode());
+			}
 		} else {
-			sb.append("%");
-			sb.append(DataStore.getInstance().getPlaceCode(thing));
+			if (thing.equals("Trapped Pit")) {
+				thing = "Deep Pit";
+			}
+			Location location = DataStore.getInstance().getLocation(thing);
+			if (location != null) {
+				sb.append("%");
+				sb.append(location.getCode());
+			}
 		}
-		
+		if (sb.toString().length() == 0) {
+			System.out.println(thing);
+			System.out.println();
+		}
 		code = sb.toString();
 	}
 	

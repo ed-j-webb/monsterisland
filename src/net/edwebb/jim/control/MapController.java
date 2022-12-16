@@ -57,13 +57,8 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
-import net.edwebb.jim.data.Coordinate;
-import net.edwebb.jim.data.Feature;
-import net.edwebb.jim.data.FeatureData;
-import net.edwebb.jim.data.Flag;
 import net.edwebb.jim.data.MapData;
 import net.edwebb.jim.data.MapIndex;
-import net.edwebb.jim.data.Terrain;
 //import net.edwebb.jim.factory.Diff;
 import net.edwebb.jim.factory.FactoryManager;
 //import net.edwebb.jim.factory.Merge;
@@ -77,7 +72,11 @@ import net.edwebb.jim.model.UndoableMapChange;
 import net.edwebb.jim.view.EditPanel;
 import net.edwebb.jim.view.MiniMap;
 import net.edwebb.jim.view.ViewPanel;
-import net.edwebb.mi.db.DataStore;
+import net.edwebb.mi.data.Coordinate;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Feature;
+import net.edwebb.mi.data.Flag;
+import net.edwebb.mi.data.Terrain;
 import net.edwebb.mi.extract.MIExtractor;
 import net.edwebb.mi.extract.Sighting;
 import net.edwebb.mi.extract.Stats;
@@ -436,12 +435,12 @@ public class MapController {
 						scroll = true;
 					} else {
 						// Update the terrain
-						Terrain t = FeatureData.getInstance().getTerrain((short)e.getKeyCode());
+						Terrain t = DataStore.getInstance().getTerrain((short)e.getKeyCode());
 						if (t != null) {
 							handleFeatureEdit(getModel().getSelected(), EditPanel.ADD, t);
 						}
 						// Flag the square
-						Flag f = FeatureData.getInstance().getFlag((short)(e.getKeyCode() - 48));
+						Flag f = net.edwebb.mi.data.DataStore.getInstance().getFlag((short)(e.getKeyCode() - 48));
 						if (f != null) {
 							if (e.isShiftDown()) {
 								handleFlagEdit(getModel().getSelected(), f);
@@ -659,7 +658,7 @@ public class MapController {
 	private void mergeFlags(Point pos) {
 		UndoableCombinedChange change = new UndoableCombinedChange("(" + pos.y + "," + pos.x + ") " );
 		getIndex().removeExtra(getModel().getExtra(pos, Short.MIN_VALUE), pos);
-		Iterator<Flag> it = FeatureData.getInstance().getFlags().iterator();
+		Iterator<Flag> it = DataStore.getInstance().getFlags().iterator();
 		while (it.hasNext()) {
 			Flag f = it.next();
 			if (getModel().isFlagged(pos, f.getId())) {
@@ -997,7 +996,7 @@ public class MapController {
 	 */
 	private JComboBox<Coordinate> getCmbCoords() {
 		if (cmbCoords == null) {
-			cmbCoords = new JComboBox<Coordinate>(FeatureData.getInstance().getCoordinates().toArray(new Coordinate[FeatureData.getInstance().getCoordinates().size()]));
+			cmbCoords = new JComboBox<Coordinate>(DataStore.getInstance().getCoordinates().toArray(new Coordinate[DataStore.getInstance().getCoordinates().size()]));
 			cmbCoords.setSelectedItem(MEDIUM_SQUARE);
 			cmbCoords.addItemListener(new ItemListener() {
 				
@@ -1969,7 +1968,7 @@ public class MapController {
 			
 			fc = getDirectoryChooser();
 			returnVal = fc.showOpenDialog(getFrame());
-			if (returnVal != JFileChooser.APPROVE_OPTION) {
+			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				miExtractor = new MIExtractor(fc.getSelectedFile());
 			} else {
 				miExtractor = new MIExtractor();
@@ -2020,9 +2019,17 @@ public class MapController {
 					JOptionPane.showMessageDialog(getFrame(), "Cannot read data from " + files[i].getAbsolutePath());
 					getStatusLabel().setText("Java Island Mapper");
 					return;
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.out.println();
+				}
+				if (text == null || text.length() == 0) {
+					JOptionPane.showMessageDialog(getFrame(), "Cannot find any text in " + files[i].getAbsolutePath());
+					getStatusLabel().setText("Java Island Mapper");
+					return;
 				}
 				try {
-					Turn turn = miExtractor.extract(new StringReader(text), (i==983 ? "N" : mode), coords[0], coords[1], stats);
+					Turn turn = miExtractor.extract(new StringReader(text), (i==0 ? "N" : mode), coords[0], coords[1], stats);
 					coords[0] = turn.getX();
 					coords[1] = turn.getY();
 					stats = turn.getStats();
@@ -2031,6 +2038,9 @@ public class MapController {
 					JOptionPane.showMessageDialog(getFrame(), "Cannot extract data from " + files[i].getAbsolutePath());
 					getStatusLabel().setText("Java Island Mapper");
 					return;
+				} catch (Exception e) {
+					e.printStackTrace();
+					System.out.println();
 				}
 			}
 		}
@@ -2043,6 +2053,7 @@ public class MapController {
 			
 			while (it.hasNext()) {
 				Sighting s = it.next();
+				
 				if (s.getCode().length() == 8 && s.getCode().startsWith("%")) {
 					for (int i = 0; i < s.getCode().length(); i+=4) {
 						result = addFeature(new Sighting(s.getX(),s.getY(),s.getCode().substring(i, i + 4)), change);
@@ -2073,20 +2084,21 @@ public class MapController {
 		}
 
 		private String addFeature(Sighting s, UndoableCombinedChange masterChange) {
-			Feature f = FeatureData.getInstance().findFeature(s.getCode());
+			Feature f = DataStore.getInstance().getFeatureByCode(s.getCode());
 			
 			if (f == null) {
 				return "(" + s.getY()  + "," + s.getX() + ") " + s.getCode() + "\n";
 			} else {
 				Point point = new Point(s.getX(), s.getY());
 				Rectangle rect = getModel().getBounds();
-				if (point.x - rect.x < 0 || rect.y - point.y < 0) {
+				rect = new Rectangle(rect.x, rect.y - rect.height, rect.width, rect.height);
+				if (!rect.contains(point)) {
 					return "(" + s.getY()  + "," + s.getX() + ") " + s.getCode() + " (out of bounds)\n";
 				} else {
 					UndoableCombinedChange change = handleFeatureEdit(point, EditPanel.ADD, f);
 					masterChange.addAllChanges(change);
 					undoManager.removeNextUndo();
-					getMiniMap().setPoint(point, FeatureData.getInstance().getTerrain(getModel().getSquare(point)[0]));
+					getMiniMap().setPoint(point, DataStore.getInstance().getTerrain(getModel().getSquare(point)[0]));
 				}
 			}
 			return null;
@@ -2139,7 +2151,7 @@ public class MapController {
 	}
 	
 	public static void main (String[] args) throws IOException {
-		FeatureData.createInstance(new File("data"));
+		DataStore.createInstance(new File("data"));
 		FactoryManager.createInstance(new File("data"));
 		DataStore.createInstance(new File("data"));
 		

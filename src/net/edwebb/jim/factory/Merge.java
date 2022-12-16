@@ -2,13 +2,15 @@ package net.edwebb.jim.factory;
 
 import java.awt.Point;
 
-import net.edwebb.jim.data.Decoder;
 import net.edwebb.jim.data.MapData;
+import net.edwebb.mi.data.Coordinate;
+import net.edwebb.mi.data.Decoder;
 
 /**
  * A class that can merge two MapData objects into a new one
  * @author Ed Webb
  *
+ * @deprecated Not used any more?
  */
 public class Merge {
 	
@@ -22,12 +24,14 @@ public class Merge {
 	 * @return a MapData containing the sum of features in newData and baseData
 	 */
 	public static MapData merge(MapData newData, MapData baseData) {
-		if (newData.getCoord() == null || baseData.getCoord() == null) {
+		if (newData.getOffset() == null || baseData.getOffset() == null) {
 			throw new IllegalArgumentException("Both MapData objects must have their co-ordinate systems set");
 		}
 
 		// Calculate the offset between the top-left of the maps
-		Point off = newData.getCoord().getOffset(baseData.getCoord());
+		Coordinate newCoordinate = new Coordinate(new Point(newData.getOffX(), newData.getOffY()), newData.getOffset());
+		Coordinate baseCoordinate = new Coordinate(new Point(baseData.getOffX(), baseData.getOffY()), baseData.getOffset());
+		Point off = newCoordinate.getOffset(baseCoordinate);
 
 		// Figure out the dimensions of the new MapData
 		short top = (short) Math.max(baseData.getTop(), newData.getTop() + off.y);
@@ -40,7 +44,7 @@ public class Merge {
 		Point baseOff = new Point(left - baseData.getLeft(), baseData.getTop() - top);
 		Point newOff = new Point(left - newData.getLeft() + off.x, newData.getTop() - top - off.y);
 
-		data.setCoord(baseData.getCoord());
+		data.setOffset(baseCoordinate.getOffset().x, baseCoordinate.getOffset().y, baseCoordinate.getName());
 		for (int x = 0; x < data.getWidth(); x++) {
 			for (int y = 0; y < data.getHeight(); y++) {
 				data.setSquare(x, y, mergeSquare(newData.getSquare(x + newOff.x, y+ newOff.y), baseData.getSquare(x + baseOff.x, y + baseOff.y)));

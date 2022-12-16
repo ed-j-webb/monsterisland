@@ -19,9 +19,9 @@ import java.util.Set;
 
 import javax.swing.filechooser.FileFilter;
 
-import net.edwebb.jim.data.Decoder;
-import net.edwebb.jim.data.FeatureData;
 import net.edwebb.jim.data.MapData;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Decoder;
 
 public class KAOSDataFactory implements DataFactory {
 
@@ -255,7 +255,7 @@ public class KAOSDataFactory implements DataFactory {
 		
 		// set the Trail code
 		TRAIL = Decoder.shortFromString("TRL");
-		if (FeatureData.getInstance().getFeature(TRAIL) == null) {
+		if (DataStore.getInstance().getFeatureById(TRAIL) == null) {
 			throw new IllegalStateException("Cannot find the Trail feature using code TRL");
 		}
 		
@@ -449,7 +449,7 @@ public class KAOSDataFactory implements DataFactory {
 				short[] id = getIDsForKAOS(entry.getName());
 				short s = 0;
 				
-				if (id.length > 0 && FeatureData.getInstance().isValid(id[0])) {
+				if (id.length > 0 && DataStore.getInstance().isValid(id[0])) {
 					s = id[0];
 				} else {
 					s = 0;
@@ -553,7 +553,7 @@ public class KAOSDataFactory implements DataFactory {
 		DBEntry entry = lookup.get(index);
 		if (entry != null) {
 			if (entry.getNumber() > 100) {
-				if (FeatureData.getInstance().isValid(Short.toString(entry.getNumber()))) {
+				if (DataStore.getInstance().isValid(Short.toString(entry.getNumber()))) {
 					sqr = combineArrays(sqr, entry.getNumber());
 				} else {
 					unmatched.add(entry.getName());
@@ -568,7 +568,7 @@ public class KAOSDataFactory implements DataFactory {
 						note.append("\n");
 					} else if (id[0] >= 0 && id[0] < 8) {
 						sqr[0] |= (1 << (id[0] + 8));
-					} else if (FeatureData.getInstance().isValid(id[0])) {
+					} else if (DataStore.getInstance().isValid(id[0])) {
 						sqr = combineArrays(sqr, id[0]);
 					} else {
 						unmatched.add(entry.getName());
@@ -584,7 +584,7 @@ public class KAOSDataFactory implements DataFactory {
 	private short[] cleanArray(short[] sqr) {
 		int k = sqr.length;
 		for (int i = 0; i < sqr.length; i++) {
-			if (!FeatureData.getInstance().isValid(sqr[i])) {
+			if (!DataStore.getInstance().isValid(sqr[i])) {
 				if (sqr[i] < 0 || sqr[i] > 999) {
 					unmatched.add(Decoder.stringFromShort(sqr[i]));
 				} else {

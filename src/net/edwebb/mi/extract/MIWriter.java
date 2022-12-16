@@ -19,7 +19,15 @@ public class MIWriter {
 		this.dbDir = dbDir;
 	}
 	
-	public void printData(Encounter enc, int depth) throws IOException {
+	public void printData(Turn turn) throws IOException {
+		try {
+			printData(turn, 0);
+		} finally {
+			closeWriters();
+		}
+	}
+	
+	private void printData(Encounter enc, int depth) throws IOException {
 		BufferedWriter writer = getWriter("Turns.txt");
 		for (int i = 0; i < depth; i++) {
 			writer.write("  ");
@@ -33,11 +41,10 @@ public class MIWriter {
 		if (enc.getEncType().equals("Turn")) {
 			printData(((Turn)enc).getSightings());
 			printData(((Turn)enc).getStats());
-			closeWriters();
 		}
 	}
 	
-	public void printData(Set<Sighting> sightings) throws IOException {
+	private void printData(Set<Sighting> sightings) throws IOException {
 		BufferedWriter writer = getWriter("Turns.txt");
 		if (sightings.size() > 0) {
 			writer.write("Sightings\n");
@@ -49,12 +56,20 @@ public class MIWriter {
 		}
 	}
 	
-	public void printData(Stats stats) throws IOException {
+	private void printData(Stats stats) throws IOException {
 		BufferedWriter writer = getWriter("Turns.txt");
 		writer.write(stats.toString());
 	}
 	
-	public void writeData(Encounter enc) throws IOException {
+	public void writeData(Turn enc) throws IOException {
+		try {
+			writeData((Encounter)enc);
+		} finally {
+			closeWriters();
+		}
+	}
+	
+	private void writeData(Encounter enc) throws IOException {
 		String data = enc.getData();
 		if (!data.equals("")) {
 			String fileName = data.substring(0, data.indexOf(","));
@@ -69,11 +84,10 @@ public class MIWriter {
 		if (enc.getEncType().equals("Turn")) {
 			writeData(((Turn)enc).getSightings());
 			writeData(((Turn)enc).getStats());
-			closeWriters();
 		}
 	}
 	
-	public void writeData(Stats stats) throws IOException {
+	private void writeData(Stats stats) throws IOException {
 		String data = stats.getData();
 		if (!data.equals("")) {
 			String fileName = data.substring(0, data.indexOf(","));
@@ -82,7 +96,7 @@ public class MIWriter {
 		}
 	}
 
-	public void writeData(Set<Sighting> sightings) throws IOException {
+	private void writeData(Set<Sighting> sightings) throws IOException {
 		if (sightings.size() > 0) {
 			BufferedWriter writer = getWriter("Sightings.csv");
 			Iterator<Sighting> it = sightings.iterator();

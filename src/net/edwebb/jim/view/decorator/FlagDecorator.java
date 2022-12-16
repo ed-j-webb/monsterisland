@@ -5,10 +5,10 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.util.Iterator;
 
-import net.edwebb.jim.data.FeatureData;
-import net.edwebb.jim.data.Flag;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Flag;
 
 public class FlagDecorator implements Decorator {
 
@@ -22,7 +22,7 @@ public class FlagDecorator implements Decorator {
 		int size = model.getSize();
 		int ox = 0;
 		int oy = size - 13;
-		Iterator<Flag> flags = FeatureData.getInstance().getFlags().iterator();
+		Iterator<Flag> flags = DataStore.getInstance().getFlags().iterator();
 		//Iterator<Flag> flags = FeatureData.getInstance().getFlags(square[0]).iterator();
 		while (flags.hasNext()) {
 			Flag f = flags.next();

@@ -2,9 +2,11 @@ package net.edwebb.mi.data;
 
 import java.awt.Point;
 
-import net.edwebb.jim.data.Feature;
-import net.edwebb.jim.data.FeatureData;
-
+/**
+ * @deprecated Replaced by a more comprehensive turn extractor version 2.0.0
+ * @author edw
+ *
+ */
 public class Sighting {
 
 	private Point p;
@@ -65,74 +67,74 @@ public class Sighting {
 	 * @return the found feature or null
 	 */
 	private Feature findFeature(String thing) {
-		feature = FeatureData.getInstance().getFeature(thing);
+		feature = DataStore.getInstance().getFeatureByName(thing);
 		if (feature != null) {
 			return feature;
 		}
 		
 		int len = thing.length();
 		if (thing.endsWith("s")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-1));
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-1));
 			if (feature != null) {
 				return feature;
 			}
 		}
 		if (thing.endsWith("es")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-2));
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-2));
 			if (feature != null) {
 				return feature;
 			}
 		}
 		if (thing.endsWith("ies")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-3) + "y");
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-3) + "y");
 			if (feature != null) {
 				return feature;
 			}
 		}
 		if (thing.endsWith("i")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-1) + "us");
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-1) + "us");
 			if (feature != null) {
 				return feature;
 			}
 		}
 		if (thing.endsWith("i")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-1) + "a");
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-1) + "a");
 			if (feature != null) {
 				return feature;
 			}
 		}
 		if (thing.endsWith("ice")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-3) + "ouse");
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-3) + "ouse");
 			if (feature != null) {
 				return feature;
 			}
 		}
 		if (thing.endsWith("ves")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-3) + "f");
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-3) + "f");
 			if (feature != null) {
 				return feature;
 			}
 		}
 		if (thing.endsWith("ves")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-3) + "fe");
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-3) + "fe");
 			if (feature != null) {
 				return feature;
 			}
 		}
 		if (thing.endsWith("men")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-3) + "man");
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-3) + "man");
 			if (feature != null) {
 				return feature;
 			}
 		}
 		if (thing.endsWith("eese")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-4) + "oose");
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-4) + "oose");
 			if (feature != null) {
 				return feature;
 			}
 		}
 		if (thing.endsWith("eet")) {
-			feature = FeatureData.getInstance().getFeature(thing.substring(0, len-3) + "oot");
+			feature = DataStore.getInstance().getFeatureByName(thing.substring(0, len-3) + "oot");
 			if (feature != null) {
 				return feature;
 			}

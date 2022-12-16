@@ -1,4 +1,4 @@
-package net.edwebb.jim.data;
+package net.edwebb.mi.data;
 
 import java.awt.Point;
 

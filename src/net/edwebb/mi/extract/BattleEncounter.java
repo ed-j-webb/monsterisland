@@ -3,8 +3,7 @@ package net.edwebb.mi.extract;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.edwebb.mi.db.DataStore;
-
+import net.edwebb.mi.data.Foe;
 
 /**
  * @author aaw129
@@ -12,11 +11,11 @@ import net.edwebb.mi.db.DataStore;
  */
 public class BattleEncounter extends Encounter {
 
-	private String creature;
-	private Integer creatureID;
+	private Foe foe;
 	private int food;
 	private int item;
 	private int outcome;
+	private String monsterName;
 	
 	public static final int CREATURE_KILLED = 1;
 	public static final int CREATURE_FLEE = 2;
@@ -28,43 +27,24 @@ public class BattleEncounter extends Encounter {
 	List<Round> rounds = new ArrayList<Round>();
 
 	public String getEncType() {
-		if (creatureID != null && creatureID < 100) {
+		if (foe == null) {
+			return "Unknown";
+		} else if (foe.getId() == 0) {
 			return "Monster";
 		} else {
 			return "Creature";
 		}
 	}
 	
-	public String getCreature() {
-		return creature;
-	}
-
-	public void setCreature(String creature) {
-		this.creature = creature;
-		if (parent.getEncType().equals("Location")) {
-			LocationEncounter le = (LocationEncounter)parent;
-			if (le.getLocation().equals("Loggerhead Camp")) {
-				creatureID = DataStore.getInstance().getRaceID("Loggerhead");
-			} else if (le.getLocation().equals("Hillock")) {
-				creatureID = DataStore.getInstance().getRaceID("Knolltir");
-			} else if (le.getLocation().equals("Mine Shaft")) {
-				creatureID = DataStore.getInstance().getRaceID("Rock Troll");
-			} else if (le.getLocation().equals("Bodden Camp") && creature.toUpperCase().equals(creature)) {
-				creatureID = DataStore.getInstance().getRaceID("Bodden");
-			} else if (le.getLocation().equals("Bodden Camp") && creature.contains("'")) {
-				creatureID = DataStore.getInstance().getRaceID("High Bodden");
-			}
-		}
-		//if (creature.equals(creature.toUpperCase())) {
-		//    creatureID = DataStore.getRaceID("Loggerhead");
-		//}
-		if (creatureID == null || creatureID == 0) {
-			creatureID = DataStore.getInstance().getCreatureID(creature);
+	public void setFoe(Foe foe, String foeName) {
+		this.foe = foe;
+		if (foe.getId() == 0) {
+			monsterName = foeName;
 		}
 	}
 
-	public Integer getCreatureID() {
-		return creatureID;
+	public Foe getFoe() {
+		return foe;
 	}
 
 	public int getFood() {
@@ -103,9 +83,9 @@ public class BattleEncounter extends Encounter {
 		StringBuffer sb = new StringBuffer();
 		sb.append(super.toString());
 		sb.append(": ");
-		sb.append(creature);
+		sb.append(foe.getName());
 		sb.append(" (");
-		sb.append(creatureID);
+		sb.append(foe.getCode());
 		sb.append(") ");
 		sb.append(OUTCOME[outcome]);
 		sb.append(" Items: ");
@@ -133,7 +113,7 @@ public class BattleEncounter extends Encounter {
 		sb.append("Encounter-");
 		sb.append(getEncType());
 		sb.append(",");
-		sb.append(monsterID);
+		sb.append(monsterNumber);
 		sb.append(",");
 		sb.append(turnNumber);
 		sb.append(",");
@@ -141,12 +121,12 @@ public class BattleEncounter extends Encounter {
 		sb.append(",");
 		sb.append(subEncounterNumber);
 		sb.append(",");
-		sb.append(locationID);
+		sb.append(locationCode);
 		sb.append(",");
-		sb.append(creatureID);
+		sb.append(foe.getCode());
 		if (getEncType().equals("Monster")) {
 			sb.append(",");
-			sb.append(creature);
+			sb.append(monsterName);
 		}
 		sb.append(",");
 		sb.append(outcome);

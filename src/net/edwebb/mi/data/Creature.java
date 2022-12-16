@@ -1,4 +1,4 @@
-package net.edwebb.jim.data;
+package net.edwebb.mi.data;
 
 import javax.swing.ImageIcon;
 
@@ -8,7 +8,7 @@ import javax.swing.ImageIcon;
  * @author Ed Webb
  *
  */
-public class Creature extends Feature implements Comparable<Creature> {
+public class Creature extends Feature implements Comparable<Creature>, Foe {
 
 	/**
 	 * The creature icon

@@ -4,8 +4,8 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-import net.edwebb.jim.data.Coordinate;
 import net.edwebb.jim.data.MapData;
+import net.edwebb.mi.data.Coordinate;
 
 public class DiffMapModel implements MapModel {
 

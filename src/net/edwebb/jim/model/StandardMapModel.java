@@ -6,9 +6,9 @@ import java.awt.Rectangle;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-import net.edwebb.jim.data.Coordinate;
-import net.edwebb.jim.data.Decoder;
 import net.edwebb.jim.data.MapData;
+import net.edwebb.mi.data.Coordinate;
+import net.edwebb.mi.data.Decoder;
 
 public class StandardMapModel implements MapModel {
 
@@ -18,7 +18,8 @@ public class StandardMapModel implements MapModel {
 	
 	private int size = 52;
 	
-	private Coordinate coord;
+	private Coordinate currentCoord;
+	private Coordinate defaultCoord;
 	private Point offset = new Point(0, 0);
 	
 	private Rectangle bounds;
@@ -29,7 +30,8 @@ public class StandardMapModel implements MapModel {
 		this.name = name;
 		this.size = size;
 		this.data = data;
-		this.coord = data.getCoord();
+		this.currentCoord = new Coordinate(new Point(data.getOffX(), data.getOffY()), name);
+		this.defaultCoord = new Coordinate(new Point(data.getOffX(), data.getOffY()), name);
 		bounds = new Rectangle(data.getLeft(), data.getTop(), data.getWidth(), data.getHeight());
 	}
 
@@ -246,8 +248,8 @@ public class StandardMapModel implements MapModel {
 
 	@Override
 	public UndoableChange setCurrentCoOrdinates(Coordinate coord) {
-		Coordinate oldCoord = data.getCoord();
-		this.coord = coord;
+		Coordinate oldCoord = this.currentCoord;
+		this.currentCoord = coord;
 		updateOffset();
 		if (oldCoord != null && oldCoord.equals(coord)) {
 			return null;
@@ -258,13 +260,14 @@ public class StandardMapModel implements MapModel {
 
 	@Override
 	public Coordinate getCurrentCoOrdinates() {
-		return coord;
+		return currentCoord;
 	}
 	
 	@Override
 	public UndoableChange setDefaultCoOrdinates(Coordinate coord) {
-		Coordinate oldCoord = data.getCoord();
-		data.setCoord(coord);
+		Coordinate oldCoord = this.defaultCoord;
+		this.defaultCoord = coord;
+		data.setOffset(coord.getOffset().x, coord.getOffset().y, coord.getName());
 		updateOffset();
 		if (oldCoord != null && oldCoord.equals(coord)) {
 			return null;
@@ -275,7 +278,7 @@ public class StandardMapModel implements MapModel {
 
 	@Override
 	public Coordinate getDefaultCoOrdinates() {
-		return data.getCoord();
+		return defaultCoord;
 	}
 
 	public Point getOffset() {
@@ -283,8 +286,8 @@ public class StandardMapModel implements MapModel {
 	}
 	
 	private void updateOffset() {
-		if (data.getCoord() != null && coord != null) {
-			this.offset = data.getCoord().getOffset(coord);
+		if (defaultCoord != null && currentCoord != null) {
+			this.offset = defaultCoord.getOffset(currentCoord);
 		} else {
 			this.offset = new Point(0, 0);
 		}

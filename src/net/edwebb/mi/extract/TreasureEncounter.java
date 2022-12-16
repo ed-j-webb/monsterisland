@@ -1,6 +1,6 @@
 package net.edwebb.mi.extract;
 
-import net.edwebb.mi.db.DataStore;
+import net.edwebb.mi.data.Item;
 
 /**
  * @author aaw129
@@ -9,8 +9,7 @@ import net.edwebb.mi.db.DataStore;
 public class TreasureEncounter extends Encounter {
 
 	private int quantity;
-	private String item;
-	private Integer itemID;
+	private Item item;
 
 	public String getEncType() {
 		return "Treasure";
@@ -24,17 +23,12 @@ public class TreasureEncounter extends Encounter {
 		this.quantity = quantity;
 	}
 
-	public String getItem() {
+	public Item getItem() {
 		return item;
 	}
 
-	public void setItem(String item) {
+	public void setItem(Item item) {
 		this.item = item;
-		this.itemID = DataStore.getInstance().getItemID(item);
-	}
-
-	public Integer getItemID() {
-		return itemID;
 	}
 
 	public String toString() {
@@ -43,9 +37,9 @@ public class TreasureEncounter extends Encounter {
 		sb.append(": ");
 		sb.append(quantity);
 		sb.append(" ");
-		sb.append(item);
+		sb.append(item.getName());
 		sb.append(" (");
-		sb.append(itemID);
+		sb.append(item.getId());
 		sb.append(")");
 		return sb.toString();
 	}
@@ -53,7 +47,7 @@ public class TreasureEncounter extends Encounter {
 	public String getData() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Encounter-Treasure,");
-		sb.append(monsterID);
+		sb.append(monsterNumber);
 		sb.append(",");
 		sb.append(turnNumber);
 		sb.append(",");
@@ -61,9 +55,9 @@ public class TreasureEncounter extends Encounter {
 		sb.append(",");
 		sb.append(subEncounterNumber);
 		sb.append(",");
-		sb.append(locationID);
+		sb.append(locationCode);
 		sb.append(",");
-		sb.append(itemID);
+		sb.append(item.getId());
 		sb.append(",");
 		sb.append(quantity);
 		sb.append("\n");

@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.swing.DefaultListModel;
 
-import net.edwebb.jim.data.Feature;
+import net.edwebb.mi.data.Feature;
 
 public class FeatureListModel<T extends Feature> extends DefaultListModel<T> {
 

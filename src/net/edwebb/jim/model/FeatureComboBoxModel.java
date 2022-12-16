@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.swing.ComboBoxModel;
 
-import net.edwebb.jim.data.Feature;
+import net.edwebb.mi.data.Feature;
 
 public class FeatureComboBoxModel<T extends Feature> extends FeatureListModel<T> implements ComboBoxModel<T> {
 

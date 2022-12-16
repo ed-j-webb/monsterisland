@@ -5,13 +5,13 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.geom.Rectangle2D;
 
-import net.edwebb.jim.data.Decoder;
-import net.edwebb.jim.data.Feature;
-import net.edwebb.jim.data.FeatureData;
-import net.edwebb.jim.data.Location;
-import net.edwebb.jim.data.Terrain;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Decoder;
+import net.edwebb.mi.data.Feature;
+import net.edwebb.mi.data.Location;
+import net.edwebb.mi.data.Terrain;
 
 public class FeatureDecorator implements Decorator {
 
@@ -24,11 +24,11 @@ public class FeatureDecorator implements Decorator {
 	public void decorate(Graphics2D g2d, Point sqr, int px, int py,  MapModel model, MapSearch search) {
 		int size = model.getSize();
 		short[] square = model.getSquare(sqr);
-		Terrain t = FeatureData.getInstance().getTerrain(square[0]);
+		Terrain t = DataStore.getInstance().getTerrain(square[0]);
 		int ox = 0;
 		int oy = 0;
 		for(int i = 1; i < square.length; i++) {
-			Feature f = FeatureData.getInstance().getFeature(square[i]);
+			Feature f = DataStore.getInstance().getFeatureById(square[i]);
 			if (f != null) {
 				int extra = model.getExtra(sqr, f.getId());
 				if (ox < size && oy < size) {
@@ -67,7 +67,7 @@ public class FeatureDecorator implements Decorator {
 				}
 			} else {
 				// It may be a terrain with flags
-				f = FeatureData.getInstance().getFeature(Decoder.shortLowByte(square[i]));
+				f = DataStore.getInstance().getFeatureById(Decoder.shortLowByte(square[i]));
 				if (f == null) {
 					System.out.println(square[i] + " (" + Decoder.stringFromShort(square[i]) + ") is not valid");
 				}

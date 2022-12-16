@@ -6,7 +6,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JLabel;
 import javax.swing.JList;
 
-import net.edwebb.jim.data.Feature;
+import net.edwebb.mi.data.Feature;
 
 /**
  * A renderer for a Feature in a List Cell. This class uses a JLabel to display the feature's icon, name and code.

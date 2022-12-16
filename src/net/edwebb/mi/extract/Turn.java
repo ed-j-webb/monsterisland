@@ -3,16 +3,12 @@ package net.edwebb.mi.extract;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.edwebb.mi.db.DataStore;
-
-
 /**
  * @author Ed Webb
  * @version 1.0 : 11 Mar 2011
  */
 public class Turn extends Encounter {
 
-	private int monsterNumber;
 	private Stats stats = new Stats(this);
 	private Set<Sighting> sightings;
 
@@ -22,6 +18,11 @@ public class Turn extends Encounter {
 		subEncounterNumber = 0;
 		turnNumber = 0;
 		sightings = new HashSet<Sighting>();
+		locationCode = "";
+	}
+	
+	public void setMonsterNumber(int monsterNumber) {
+		this.monsterNumber = monsterNumber;
 	}
 	
 	public Set<Sighting> getSightings() {
@@ -32,7 +33,6 @@ public class Turn extends Encounter {
 	public void setSightings(Set<Sighting> sightings) {
 		this.sightings = sightings;
 	}
-
 
 	public String getEncType() {
 		return "Turn";
@@ -45,15 +45,6 @@ public class Turn extends Encounter {
 	public void setStats(Stats stats) {
 		this.stats = stats;
 	}
-
-	public int getMonsterNumber() {
-		return monsterNumber;
-	}
-
-	public void setMonsterNumber(int monsterNumber) {
-		this.monsterNumber = monsterNumber;
-		this.monsterID = DataStore.getInstance().getMonsterID(monsterNumber);
-	}
 	
 	public int getEncounterNumber() {
 		return encounters.size();
@@ -65,9 +56,6 @@ public class Turn extends Encounter {
 		sb.append(turnNumber);
 		sb.append(" Monster ");
 		sb.append(monsterNumber);
-		sb.append(" (");
-		sb.append(monsterID);
-		sb.append(")");
 		return sb.toString();
 	}
 	public String getData() {

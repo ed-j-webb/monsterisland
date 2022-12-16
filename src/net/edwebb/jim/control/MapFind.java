@@ -22,14 +22,14 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SpringLayout;
 
-import net.edwebb.jim.data.Creature;
-import net.edwebb.jim.data.Feature;
-import net.edwebb.jim.data.FeatureData;
-import net.edwebb.jim.data.Location;
-import net.edwebb.jim.data.Plant;
 import net.edwebb.jim.model.FeatureComboBoxModel;
 import net.edwebb.jim.view.FeatureCellRenderer;
 import net.edwebb.jim.view.SpringUtilities;
+import net.edwebb.mi.data.Creature;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Feature;
+import net.edwebb.mi.data.Location;
+import net.edwebb.mi.data.Plant;
 
 /**
  * The Find dialog box allows a user to select a feature or string to search for. The getFind() method should be called to display this dialog
@@ -170,7 +170,7 @@ public class MapFind extends JDialog {
 	 */
 	private JComboBox<Location> getLocationComboBox() {
 		if (cmbLocation == null) {
-			cmbLocation = new JComboBox<Location>(new FeatureComboBoxModel<Location>(FeatureData.getInstance().getLocations()));
+			cmbLocation = new JComboBox<Location>(new FeatureComboBoxModel<Location>(DataStore.getInstance().getLocations()));
 			cmbLocation.setRenderer(getRenderer());
 			SpringUtilities.fixHeight(cmbLocation);
 		}
@@ -183,7 +183,7 @@ public class MapFind extends JDialog {
 	 */
 	private JComboBox<Plant> getPlantComboBox() {
 		if (cmbPlant == null) {
-			cmbPlant = new JComboBox<Plant>(new FeatureComboBoxModel<Plant>(FeatureData.getInstance().getPlants()));
+			cmbPlant = new JComboBox<Plant>(new FeatureComboBoxModel<Plant>(DataStore.getInstance().getPlants()));
 			cmbPlant.setRenderer(getRenderer());
 			SpringUtilities.fixHeight(cmbPlant);
 		}
@@ -196,7 +196,7 @@ public class MapFind extends JDialog {
 	 */
 	private JComboBox<Creature> getCreatureComboBox() {
 		if (cmbCreature == null) {
-			cmbCreature = new JComboBox<Creature>(new FeatureComboBoxModel<Creature>(FeatureData.getInstance().getCreatures()));
+			cmbCreature = new JComboBox<Creature>(new FeatureComboBoxModel<Creature>(DataStore.getInstance().getCreatures()));
 			cmbCreature.setRenderer(getRenderer());
 			SpringUtilities.fixHeight(cmbCreature);
 		}

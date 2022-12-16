@@ -14,10 +14,9 @@ import java.util.Set;
 
 import javax.swing.filechooser.FileFilter;
 
-import net.edwebb.jim.data.Coordinate;
-import net.edwebb.jim.data.Decoder;
-import net.edwebb.jim.data.FeatureData;
 import net.edwebb.jim.data.MapData;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Decoder;
 
 public class JIMDataFactory implements DataFactory {
 
@@ -105,8 +104,7 @@ public class JIMDataFactory implements DataFactory {
 						// chr(26) substitute means the coordinate offset is stored in this record
 						byte[] c = new byte[b.length - 1];
 						System.arraycopy(b, 1, c, 0, c.length);
-						Coordinate coord = new Coordinate(new Point(x, y), new String(c, "UTF-8"));
-						data.setCoord(coord);
+						data.setOffset(x, y, new String(c, "UTF-8"));
 					} else {
 						data.setSquareNotes(x, y, new String(b, "UTF-8"));
 					}
@@ -135,7 +133,7 @@ public class JIMDataFactory implements DataFactory {
 		int k = sqr.length;
 		for (int i = 0; i < sqr.length; i++) {
 			if (i == 0) {
-				if (!FeatureData.getInstance().isValid((short)(sqr[i] & 0xff))) {
+				if (!DataStore.getInstance().isValid((short)(sqr[i] & 0xff))) {
 					if ((sqr[i] & 0xff) != 85) {
 						// Don't output U terrain (silently replace with 0)
 						unmatched.add(Decoder.charFromShort((short)(sqr[i] & 0xff)));
@@ -143,7 +141,7 @@ public class JIMDataFactory implements DataFactory {
 					sqr[i] = (short)(sqr[i] & 0xff00);
 				}
 			} else {
-				if (!FeatureData.getInstance().isValid(sqr[i])) {
+				if (!DataStore.getInstance().isValid(sqr[i])) {
 					if (sqr[i] < 0 || sqr[i] > 999) {
 						unmatched.add(Decoder.stringFromShort(sqr[i]));
 					} else {
@@ -205,10 +203,10 @@ public class JIMDataFactory implements DataFactory {
 				dos.write(b);
 			}
 	
-			if (data.getCoord() != null) {
-				dos.writeShort(data.getCoord().getOffset().x);
-				dos.writeShort(data.getCoord().getOffset().y);
-				byte[] b = data.getCoord().getName().getBytes("UTF-8");
+			if (data.getOffset() != null) {
+				dos.writeShort(data.getOffX());
+				dos.writeShort(data.getOffY());
+				byte[] b = data.getOffset().getBytes("UTF-8");
 				dos.writeByte(-b.length - 1);
 				dos.write((byte) 26);
 				dos.write(b);

@@ -28,7 +28,9 @@ public class MapData {
 	// The map of notes
 	private Map<Point,String> notes;
 	
-	private Coordinate coord;
+	private int offx;
+	private int offy;
+	private String offset;
 	
 	// Load an empty map
 	public MapData() {
@@ -132,12 +134,20 @@ public class MapData {
 		dirty = true;
 	}
 
-	public Coordinate getCoord() {
-		return coord;
+	public int getOffX() {
+		return offx;
 	}
 
-	public void setCoord(Coordinate coord) {
-		this.coord = coord;
+	public int getOffY() {
+		return offy;
+	}
+
+	public String getOffset() {
+		return offset;
+	}
+
+	public void setOffset(int x, int y, String offset) {
+		this.offset = offset;
 		dirty = true;
 	}
 

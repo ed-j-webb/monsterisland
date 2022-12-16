@@ -13,10 +13,9 @@ import java.util.Set;
 
 import javax.swing.filechooser.FileFilter;
 
-import net.edwebb.jim.data.Coordinate;
-import net.edwebb.jim.data.Decoder;
-import net.edwebb.jim.data.FeatureData;
 import net.edwebb.jim.data.MapData;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Decoder;
 
 public class CSVDataFactory implements DataFactory {
 
@@ -141,8 +140,7 @@ public class CSVDataFactory implements DataFactory {
 						}
 						data.setSquareNotes(x - left, top - y, sb.toString());
 					} else if (part[2].startsWith("+")) {
-						Point p = new Point(x, y);
-						data.setCoord(new Coordinate(p, part[2].substring(1)));
+						data.setOffset(x, y, part[2].substring(1));
 					} else {
 						// Read the whole of the data into a short array
 						int z = 1 + (part[2].length() - 1) / 4;
@@ -159,7 +157,7 @@ public class CSVDataFactory implements DataFactory {
 							String bit = part[2].substring(pos, pos + 4);
 							if (bit.startsWith("#")) {
 								// Ignore notes
-							} else if (FeatureData.getInstance().isValid(bit.substring(1))) {
+							} else if (DataStore.getInstance().isValid(bit.substring(1))) {
 								if (bit.startsWith("%")) {
 									sqr[index++] = Decoder.shortFromString(bit.substring(1));
 								} else if (bit.startsWith("$")) {
@@ -230,13 +228,12 @@ public class CSVDataFactory implements DataFactory {
 			writer.write(note.getValue());
 			writer.write("\n");
 		}
-		Coordinate coord = data.getCoord();
-		if (coord != null) {
-			writer.write(Integer.toString(coord.getOffset().x));
+		if (data.getOffset() != null) {
+			writer.write(Integer.toString(data.getOffX()));
 			writer.write(",");
-			writer.write(Integer.toString(coord.getOffset().y));
+			writer.write(Integer.toString(data.getOffY()));
 			writer.write(",+");
-			writer.write(coord.getName());
+			writer.write(data.getOffset());
 			writer.write("\n");
 		}
 		writer.close();

@@ -17,7 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.InflaterInputStream;
 
-import net.edwebb.mi.db.DataStore;
+import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.extract.MIExtractor;
 import net.edwebb.mi.extract.Stats;
 import net.edwebb.mi.extract.Turn;
@@ -269,14 +269,14 @@ public class PDFExtractor {
 							map = false;
 							sb.append("\n=== END OF MAP DATA ===\n");
 						} else if (mapLeft == null) {
-							mapLeft = Integer.valueOf(match.group(2).substring(0, match.group(2).indexOf(" ")));
+							mapLeft = Integer.valueOf(match.group(2).substring(0, match.group(2).indexOf(" ")).replaceAll("[^-0-9]", ""));
 						} else if (mapTop == null) {
-							mapTop = Integer.valueOf(match.group(2).substring(0, match.group(2).indexOf(" ")));
+							mapTop = Integer.valueOf(match.group(2).substring(0, match.group(2).indexOf(" ")).replaceAll("[^-0-9]", ""));
 							mapRow = mapTop;
 							//System.out.println("Map Top Left: (" + mapTop + ", " + mapLeft + ")");
 							//System.out.println("Row# " + mapRow);
 						} else {
-							mapRow = Integer.valueOf(match.group(2).substring(0, match.group(2).indexOf(" ")));
+							mapRow = Integer.valueOf(match.group(2).substring(0, match.group(2).indexOf(" ")).replaceAll("[^-0-9]", ""));
 							//System.out.println("Row# " + mapRow);
 						}
 					}
@@ -351,10 +351,11 @@ public class PDFExtractor {
 	}
 	
 	public static void main(String[] args) throws Exception {
+		
 		PDFExtractor pdfExtractor = new PDFExtractor(new File("C:/Dev3/jIsland/data/mapicons.csv"));
 		MIExtractor miExtractor = new MIExtractor(new File("C:/Old Home/D/Ed/"));
 
-		DataStore.createInstance(new File("C:/Dev3/jIsland/midata"));
+		DataStore.createInstance(new File("C:/Dev3/jIsland/data"));
 		
 		String mode = "D";
 	    int[] coords = new int[] {0,0}; //getCoords();  

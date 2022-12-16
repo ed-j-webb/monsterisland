@@ -18,9 +18,9 @@ import java.util.Set;
 
 import javax.swing.filechooser.FileFilter;
 
-import net.edwebb.jim.data.Decoder;
-import net.edwebb.jim.data.FeatureData;
 import net.edwebb.jim.data.MapData;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Decoder;
 
 /**
  * A DataFactory that can read and write EditMI dat files
@@ -188,7 +188,7 @@ public class EMIDataFactory implements DataFactory {
 			if (b < lookups.get(TERRAIN).size()) {
 				String t = lookups.get(TERRAIN).get(b);
 				String terr = getCodeForEMI("*" + t);
-				if (terr != null && FeatureData.getInstance().isValid(terr)) {
+				if (terr != null && DataStore.getInstance().isValid(terr)) {
 					sqr[0] = Decoder.shortFromChar(terr);
 				} else {
 					unmatched.add(t);
@@ -211,7 +211,7 @@ public class EMIDataFactory implements DataFactory {
 			if (b < lookups.get(LOCATIONS).size()) {
 				String l = lookups.get(LOCATIONS).get(b);
 				String loc = getCodeForEMI(l);
-				if (loc != null && FeatureData.getInstance().isValid(loc)) {
+				if (loc != null && DataStore.getInstance().isValid(loc)) {
 					sqr[1] = Decoder.shortFromString(loc);
 					k++;
 				} else {
@@ -237,7 +237,7 @@ public class EMIDataFactory implements DataFactory {
 				if (s < lookups.get(PLANTS).size()) {
 					String p = lookups.get(PLANTS).get(s);
 					String pla = getCodeForEMI(p);
-					if (pla != null && FeatureData.getInstance().isValid(pla)) {
+					if (pla != null && DataStore.getInstance().isValid(pla)) {
 						sqr[i] = Decoder.shortFromString(pla);
 						k++;
 					} else {
@@ -247,7 +247,7 @@ public class EMIDataFactory implements DataFactory {
 					unmatched.add("Plant:" + Short.toString(s));
 				}
 			} else if (s > 100) {
-				if (FeatureData.getInstance().isValid(Short.toString(s))) {
+				if (DataStore.getInstance().isValid(Short.toString(s))) {
 					sqr[i] = s;
 					k++;
 				} else {

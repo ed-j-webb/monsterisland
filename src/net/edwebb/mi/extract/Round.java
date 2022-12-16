@@ -2,8 +2,7 @@ package net.edwebb.mi.extract;
 
 import java.util.Iterator;
 
-import net.edwebb.mi.db.DataStore;
-
+import net.edwebb.mi.data.Item;
 
 /**
  * @author aaw129
@@ -23,9 +22,7 @@ public class Round extends Encounter{
 	private int shots;
 	private int hits;
 	private int health;
-	private String weapon;
-	private Integer weaponID = Integer.valueOf(0);
-	private int damageClass;
+	private Item weapon;
 	private int weaponSkill;
 	private int skill;
 
@@ -80,11 +77,11 @@ public class Round extends Encounter{
 		this.health = health;
 	}
 
-	public String getWeapon() {
+	public Item getWeapon() {
 		return weapon;
 	}
 
-	public void setWeapon(String weapon) {
+	public void setWeapon(Item weapon) {
 		this.weapon = weapon;
 	}
 
@@ -112,14 +109,6 @@ public class Round extends Encounter{
 		this.type = type;
 	}
 	
-	public int getDamageClass() {
-		return damageClass;
-	}
-
-	public void setDamageClass(int damageClass) {
-		this.damageClass = damageClass;
-	}
-
 	public int getWeaponSkill() {
 		return weaponSkill;
 	}
@@ -128,25 +117,15 @@ public class Round extends Encounter{
 		this.weaponSkill = weaponSkill;
 	}
 
-	public Integer getWeaponID() {
-		return weaponID;
-	}
-
-	public void setWeaponID(Integer weaponID) {
-		this.weaponID = weaponID;
-	}
-
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(TYPES[type]);
 		sb.append(" ");
 		sb.append(monster ? "M " : "C ");
 		sb.append(weapon);
-		sb.append(" (DC:");
-		sb.append(damageClass);
 		sb.append(", WS:");
 		sb.append(weaponSkill);
-		sb.append(") ");
+		sb.append(" ");
 		if (type == MISSILE) {
 			sb.append(shots);
 			sb.append(":");
@@ -162,7 +141,7 @@ public class Round extends Encounter{
 		sb.append("Combat-");
 		sb.append(TYPES[type]);
 		sb.append(",");
-		sb.append(monsterID);
+		sb.append(monsterNumber);
 		sb.append(",");
 		sb.append(turnNumber);
 		sb.append(",");
@@ -176,7 +155,9 @@ public class Round extends Encounter{
 			sb.append(firstRound);
 			sb.append(",");
 		}
-		sb.append(weaponID);
+		if (weapon != null) {
+			sb.append(weapon.getId());
+		}
 		if (type == MELEE) {
 			// WeaponType
 			sb.append(",");
@@ -184,13 +165,15 @@ public class Round extends Encounter{
 				if (weapon.equals("Wrestling")) {
 					sb.append("Wr");
 				} else {
-					sb.append(DataStore.getInstance().getEquipmentCode(weapon));
+					sb.append(weapon.getEquipType());
 				}
 			}
 		}
 		if (type != SPELL) {
 			sb.append(",");
-			sb.append(damageClass);
+			if (weapon != null) {
+				sb.append(weapon.getEquipLevel());
+			}
 			sb.append(",");
 			sb.append(weaponSkill);
 			sb.append(",");

@@ -12,12 +12,12 @@ import javax.swing.JPanel;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
-import net.edwebb.jim.data.FeatureData;
 import net.edwebb.jim.data.MapIndex;
-import net.edwebb.jim.data.Terrain;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
 import net.edwebb.jim.model.UndoableChange;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Terrain;
 
 public class MiniMap extends JPanel {
 
@@ -54,7 +54,7 @@ public class MiniMap extends JPanel {
 				p.move(x, y);
 				short[] sqr = model.getSquare(p);
 				if (sqr != null && sqr.length > 0) {
-					Terrain t = FeatureData.getInstance().getTerrain(sqr[0]);
+					Terrain t = DataStore.getInstance().getTerrain(sqr[0]);
 					if (t != null) {
 						g.setColor(t.getColour());
 						g.drawLine(p.x - bounds.x, bounds.y - p.y, p.x - bounds.x, bounds.y - p.y);
@@ -82,7 +82,7 @@ public class MiniMap extends JPanel {
 		if (square == null || square.length == 0) {
 			oldColor = Color.BLACK;
 		} else {
-			oldColor = FeatureData.getInstance().getTerrain(square[0]).getColour();
+			oldColor = DataStore.getInstance().getTerrain(square[0]).getColour();
 		}
 		
 		Rectangle bounds = model.getBounds();

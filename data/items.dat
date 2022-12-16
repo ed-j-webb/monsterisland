@@ -1,0 +1,526 @@
+-1000;Wrestling;Wr;0
+-999;Gold Ring;Ri;0
+-556;Ring of the Dead;Ri;0
+-555;Black Granite
+-554;White Granite
+-553;Yellow Granite
+-552;Green Granite
+-551;Red Granite
+-550;Blue Granite
+-548;Training Rod
+-513;Demon Hide
+-508;Bramble Dart;Mi;0
+-504;Bloody Gorget
+-501;Death-God Shield;De;0
+-497;Golden Bauble
+-496;Sacrificial Bauble
+-495;Blood Bauble
+-494;Sacrificial Club;Ba;0
+-493;Death-God Orb
+-492;Death-Serpent Mask
+-491;Death-Eagle Mask
+-489;Silver Gator Greaves;Gr;0
+-488;Gold Python Mail
+-487;Gold-Leaf Greaves;Gr;0
+-486;Gold-Leaf Gauntlets;Ga;0
+-485;Jaguar-Bone Knife;Pt;0
+-484;Obsidian Axe;Ed;0
+-483;Gold-Spiked Club;Ba;0
+-482;Silver Eagle Charm;Ch;0
+0;No Item
+1;Blow Pipe;Mi;0
+2;Zinki Dart;Mi;3
+3;Crude Spear;Pl;2
+4;Carved Club;Ba;2
+5;Hand Catapult;Mi;2
+6;Gator Armour;Bo;4
+7;Knife;Pt;1
+8;Dactyl Whip;Wp;3
+9;Squzskin Gauntlets;Ga;1
+10;Squzskin
+11;Gator Hide
+12;Giant Tortoise Shell
+13;Dactyl Hide
+14;White Lotus Leaf
+15;Yellow Lotus Leaf
+16;Purple Lotus Leaf
+17;Black Lotus Leaf
+18;Bori Logs
+19;White Lotus Elixir
+20;Purple Lotus Elixir
+21;Voodoo Cauldron
+22;Oil
+23;Somanda Dust
+24;Spyglass
+25;Coconut
+26;Tuvian Shovel
+27;Large Clam Shell
+28;Jute Rope
+29;Funnel Snakeskin
+30;Ocular Coin
+31;Yogorilla Lens
+32;Black Pack Rowt Lens
+33;Torch
+34;Fart Bomb;Mi;4
+35;Yellow Lotus Elixir
+36;Small Round Rock;Mi;0
+37;Swarth Net;De;2
+38;Bird Trap
+39;Bloated Onion
+40;Calabash Pipe
+41;Spare Rope
+42;Waterskin
+43;Driftclub;Ba;1
+44;Tortoise Shield;De;5
+45;Spiked Club;Ba;4
+46;Sling;Mi;1
+47;Leather Armour;Bo;2
+48;Squzskin Greaves;Gr;1
+49;Squzskin Helmet;He;1
+50;Rattler Dart;Mi;5
+51;Swamppus Rake;Pt;3
+52;Swamppus Paw
+53;Porququill
+54;Scatamunga Horn
+55;Tooth Sabre;Ed;2
+56;Reptron Salve
+57;Hammer
+58;Throwing Spear;Mi;8
+59;Dark Lance;Pl;9
+60;Throwing Star;Mi;0
+61;Acorn Heart
+62;Shingle Poison
+63;Lime
+64;Lime Elixir
+65;Bow String
+66;Brawn Elixir
+67;Zombie Juice
+68;Smite Pike;Pl;4
+69;Firestone
+70;Great Sword;Ed;5
+71;Bardiche;Pl;6
+72;Dark Scourge;Wp;9
+73;Bastard Sword;Ed;6
+74;Spark Sprig
+75;Iron Machete;Ed;4
+76;Cavalry Sabre;Ed;4
+77;Bronze Scimitar;Ed;5
+78;Wicked Scimitar;Ed;6
+79;Sacrificial Blade;Pt;4
+80;Long Sword;Ed;4
+81;Trident;Pl;5
+82;Spark Oil Bomb;Mi;4
+83;Sourpuss Perfume
+84;Deja Voodoo Elixir
+85;Thermaway Elixir
+86;Iron Dart;Mi;7
+87;Black Cave Spore
+88;Silver-tipped Dart;Mi;4
+89;Bit Coin
+90;Iron Shovel
+91;Dust of the Entombed
+92;Jagged Bodkin;Pt;2
+93;Curved Machete;Ed;1
+94;Kaddawhip;Wp;2
+95;Short Sword;Ed;3
+96;Travel Grub
+97;Dark Throwing Star;Mi;9
+98;Gnitgnoff
+99;Food
+100;Bori Log Raft
+101;Broadsword;Ed;4
+102;Crab Buckler;De;1
+103;Snake Trap
+104;Snout Sausages
+105;Waxed Ooze
+106;Koala Tooth
+107;Barkbrute Armour;Bo;3
+108;Gaba Stone
+109;Turgid Toadstool
+110;Heart Squash
+111;Filled Waterskin
+112;Grumbel Amulet;Am;0
+113;Skull Amulet;Am;0
+114;Logbat;Ba;3
+115;Puffer Wings
+116;Umber Grass
+117;Bolotamus Muscle
+118;Purpumpkin
+119;Bigschnozz Charm;Ch;0
+120;Blackbone Ring;Ri;0
+121;Mining Pick;Pl;5
+122;Military Pick;Pl;6
+123;Keeeth Tower Shield;De;9
+124;Loadstone Amulet;Am;0
+125;Small Key
+126;Silver Knuckles;Wr;0
+127;Ballyhoo Scale
+128;Zoingo Jewel Box
+129;Stench Gland
+130;Tholomite Heart
+131;Belt & Straps;Ch;0
+132;Black Arrow Shaft
+133;Black Arrowhead
+134;Black Arrow
+135;Bone Collar;Am;0
+136;Tar Pouch
+137;Cheesmo Pouch
+138;Crab Exoscale
+139;Demon Condor Feather
+140;Zoingo Jeweled Flute
+141;Scorpoison
+142;Mudge Wax
+143;Oozelet
+144;Guano Plasm
+145;Mud Pie
+146;Flaming Gourd
+147;Barkbrute Skin
+148;Jeweled Scarab
+149;Thermadon Rex Wings
+150;Stemtoad Gland
+151;Kongo Bow
+152;Spider Spring
+153;Ingot of Pigiron
+154;Great Silver Axe;Ed;5
+155;Detect Plants Scroll
+156;Detect Caches Scroll
+157;Belly Baub
+158;Xanxu Leg Joint
+159;Gold Nugget
+160;Xanxu Snake Head
+161;Cave-Pecker Feather
+162;Rock Mushroom
+163;Silver Bead
+164;Carrion Talon
+165;Copper Ingot
+166;Blood Mite Eye
+167;Jagwere Skin
+168;Detect Natural Hazards Scroll
+169;Detect Dark Places Scroll
+170;Sourpuss Ear
+171;Fluffy Hogtail
+172;Detect Items Scroll
+173;Troll Token
+174;Rock Hammer;Ba;2
+175;Large Key
+176;Pus Pouch
+177;Detect Mounts Scroll
+178;PigIron Gauntlets;Ga;5
+179;PigIron Greaves;Gr;5
+180;Tusker Tusk
+181;Detect Creatures Scroll
+182;PigIron Helm;He;5
+183;Detect Sacrosancts Scroll
+184;Detect Above Ground Places Scroll
+185;PigIron Mail;Bo;5
+186;Troll Knife;Pt;5
+187;Swine Fat
+188;Detect Ghosts Scroll
+189;Crobbler Skin
+190;Troll Pike;Pl;7
+191;Troll Hammer;Ba;6
+192;Brass Ring;Ri;0
+193;Brass Amulet;Am;0
+194;Stag Eyes
+195;PigIron Shield;De;9
+196;Xanxu Webbed Feet
+197;Scorpion Fork
+198;Toad Leather
+199;Moon Light
+200;Lantern
+201;Diamond Brooch;Ch;0
+202;Glowing Red Ring;Ri;0
+203;Jeweled Temple Sword
+204;Silver Temple Sword;Ed;4
+205;Tainted Temple Sword;Ed;4
+206;Butchers Cleaver;Ed;3
+207;Cat Antlers
+208;Snapper Skin
+209;Worm Dart;Mi;2
+210;Tigerskin Rug
+211;Tentaculus Tentacle
+212;Chaser Plate
+213;Shotgun Serpent Skin
+214;Grasping Scourge;Wp;5
+215;Nitroegg;Mi;6
+216;Chaser Plate Armour;Bo;4
+217;Emu Dart;Mi;6
+218;Frog Bladder
+219;Huffinpuffer Air-sac
+220;Wanna Bee Stinger;Mi;4
+221;Leech Dart;Mi;3
+222;Rollypod Plate
+223;Crystal Claw
+224;Mangy Beast Skull
+225;Xanxu Bear Carcass
+226;Skull Mace;Ba;5
+227;Walraphant Tusk
+228;Billabob Bill
+229;Tar Sac
+230;Worm Plate
+231;Carbuncle Shell
+232;Spider Net
+233;Axebeak Beak
+234;Retch Gland
+235;Armoured Dragon Scale
+236;Loggerhead Shoe
+237;Bone Toothpick
+238;Knolltir Loincloth
+239;Bloody Shirt
+240;Wooden Slug
+241;Clump of Ock Fuzz
+242;Blood Thorn
+243;Shingle Club;Ba;5
+244;Silver Smite Pike;Pl;4
+245;Silver Swamppus Rake;Pt;3
+246;Silver Beak Axe;Ed;4
+247;Iron Smite Pike;Pl;5
+248;Iron Swamppus Rake;Pt;4
+249;Iron Beak Axe;Ed;5
+250;Swinging Ball
+251;Iron Spiked Club;Ba;5
+252;Parachute
+253;Luxury Food
+254;The Defender;Pt;5
+255;Wine
+256;Designer Tunic
+257;Battle Grease;Mi;1
+258;Green Lotus Elixir
+259;Pink Lotus Elixir
+260;Spark Lotus Elixir
+261;Scarab of Strength;Ch;0
+262;Crystal Ball
+263;Elixir of Fire;Mi;2
+264;Elixir of Acid;Mi;2
+265;Elixir of Lethargy;Mi;2
+266;Amulet of Protection;Am;4
+267;Elixir of Poison;Mi;2
+268;Orb of Seeing
+269;Gold Ring (Health);Ri;0
+271;Gold Ring (Unknown);Ri;0
+272;Scarab of Protection;Ch;4
+273;Rune Stone
+274;Weapons Satchel
+275;Marble Mallet
+276;Azure Smoke Bottle
+277;Sorrel Smoke Bottle
+278;Sable Smoke Bottle
+279;Emerald Smoke Bottle
+280;Erratic Smoke Bottle
+281;Silver Lotus Elixir;Wr;0
+282;Stinky Lotus Elixir
+298;Voodoo Serpent Potion
+299;Ethereal Hammer;Ba;6
+300;Ethereal Needle;Mi;6
+301;Silver Knife;Pt;1
+302;Silver Jagged Dagger;Pt;2
+303;Silver Helm;He;2
+304;Silver Gauntlets;Ga;2
+305;Silver Greaves;Gr;2
+306;Silver Ring;Ri;0
+307;Silver Amulet;Am;0
+308;Silver Charm;Ch;0
+309;Silver-studded Club;Ba;3
+310;Silver-tipped Spear;Pl;3
+311;Damaged Silver Knife
+312;Damaged Silver Dagger
+313;Damaged Silver Helm;He;1
+314;Damaged Silver Gauntlets;Ga;1
+315;Damaged Silver Greaves;Gr;1
+316;Wooden Kabuki Statue
+317;Light Sword;Ed;4
+318;Shadow Sword;Ed;4
+319;Dark Sword;Ed;4
+320;Wooden Shroud Statue
+321;Iron Stein
+322;Wooden Fuvah Statue
+323;Golden Lion Tankard
+324;Silver Dragon Statue
+325;Golden Dragon Statue
+326;Dragonbone Sword;Ed;5
+327;Dragonhide Armour;Bo;8
+328;Wooden Dragon Statue
+329;Dragonhide Shield;De;8
+330;Wooden Bodden Statue
+331;Iron Knife;Pt;2
+332;Iron Dagger;Pt;3
+333;Iron Helm;He;3
+334;Iron Greaves;Gr;3
+335;Iron Gauntlets;Ga;3
+336;Iron Shield;De;4
+337;Large Iron Shield;De;6
+338;Heavy Iron Shield;De;8
+339;King's Spiked Shield;De;7
+340;King's Spiked Gloves;Ga;4
+341;Damaged Iron Knife;Pt;1
+342;Damaged Iron Dagger;Pt;1
+343;Damaged Iron Helm;He;2
+344;Damaged Iron Gauntlets;Ga;2
+345;Damaged Iron Greaves;Gr;2
+346;Damaged Iron Shield;De;2
+347;Damaged Large Iron Shield;De;3
+348;Damaged Heavy Iron Shield;De;4
+349;King's Spiked Helmet;He;4
+350;King's Spiked Leggings;Gr;4
+351;Jade Snake Ring;Ri;0
+352;Silver Bauble
+353;Slink Bauble
+354;Black Ball
+355;Yellow Bauble
+356;Red Bauble
+357;White Bauble
+358;Tomk Necklace;Am;0
+359;Great Tomk Necklace;Am;0
+360;Silver Bone Necklace;Am;0
+361;Golden Ocular Coin
+363;Zoingo Gold Coin
+364;Zoingo Silver Coin
+365;Zoingo Copper Coin
+366;Kwando Guilder Coin
+367;Gold Gargoyle Goblet
+368;Crimson Chalice
+369;Mantle of the Dark;Bo;6
+370;Ancient Silver Spike
+371;Zoingo Ruby Dagger
+372;Unreadable Scroll
+374;Dragonbone
+375;Quartzlight Gem
+376;Fire Dust
+377;Ancient Iron Spike
+378;Silver-plated Armour;Bo;4
+379;Trolgrim
+380;Dragon Ichor
+381;Great Light Sword;Ed;5
+382;Great Dark Sword;Ed;5
+383;Great Fuvah Sword;Ed;5
+384;Locked Large Box
+385;Dragon Flagon
+386;Wooden Kelarc Statue
+387;Ethereal Scimitar;Ed;6
+389;Ethereal Lance;Pl;6
+390;Dragonbone Necklace;Am;0
+391;Ethereal Blade;Pt;6
+392;Ethereal Scourge;Wp;6
+393;Gold Ring (Invisibility);Ri;0
+394;Opened Large Box
+395;Kelarcs Red Cleaver
+396;Sunka Death Mask
+397;Small Lockpick
+398;Large Lockpick
+399;Kudo Bone
+400;Tablet of Knowledge
+401;Damaged Black Iron Helm;He;2
+402;Black Iron Helm;He;3
+403;Damaged Blue Iron Helm;He;2
+404;Blue Iron Helm;He;3
+405;Damaged Green Iron Helm;He;2
+406;Green Iron Helm;He;3
+407;Damaged Ivory Iron Helm;He;2
+408;Ivory Iron Helm;He;3
+409;Damaged Red Iron Helm;He;2
+410;Red Iron Helm;He;3
+411;Damaged Black Iron Gauntlets;Ga;2
+412;Black Iron Gauntlets;Ga;3
+413;Damaged Blue Iron Gauntlets;Ga;2
+414;Blue Iron Gauntlets;Ga;3
+415;Damaged Green Iron Gauntlets;Ga;2
+416;Green Iron Gauntlets;Ga;3
+417;Damaged Ivory Iron Gauntlets;Ga;2
+418;Ivory Iron Gauntlets;Ga;3
+419;Damaged Red Iron Gauntlets;Ga;2
+420;Red Iron Gauntlets;Ga;3
+421;Damaged Black Iron Greaves;Gr;2
+422;Black Iron Greaves;Gr;3
+423;Damaged Blue Iron Greaves;Gr;2
+424;Blue Iron Greaves;Gr;3
+425;Damaged Green Iron Greaves;Gr;2
+426;Green Iron Greaves;Gr;3
+427;Damaged Ivory Iron Greaves;Gr;2
+428;Ivory Iron Greaves;Gr;3
+429;Damaged Red Iron Greaves;Gr;2
+430;Red Iron Greaves;Gr;3
+431;Damaged Black Iron Shield;De;2
+432;Black Iron Shield;De;4
+433;Damaged Blue Iron Shield;De;2
+434;Blue Iron Shield;De;4
+435;Damaged Green Iron Shield;De;2
+436;Green Iron Shield;De;4
+437;Damaged Ivory Iron Shield;De;2
+438;Ivory Iron Shield;De;4
+439;Damaged Red Iron Shield;De;2
+440;Red Iron Shield;De;4
+441;Banded Iron Armour;Bo;5
+442;Field Plate Armour;Bo;6
+443;Full Plate Armour;Bo;7
+444;Holy Plate Mail;Bo;8
+445;Mud Golem Statue
+446;Stone Golem Statue
+447;Silver Golem Statue
+448;Iron Golem Statue
+449;Gargoyle Statue
+450;Bodden Ring Statue
+451;Hangman Rope
+453;Beak Axe;Ed;4
+454;Carbuncle Helm;He;3
+455;Billabob Dagger;Pt;3
+456;Worm-plate Helm;He;2
+457;Rollypod Greaves;Gr;2
+458;Antlered Helm;He;1
+459;Stink Bomb;Mi;4
+460;Black Lotus Tar
+461;Oil of Ugli
+462;Retching Poison
+463;Skin So Slick
+464;Armour Wax
+465;Elixir Foliculata
+466;Xanxu Construct
+467;Stink Pod
+468;Crystal-tipped Whip;Wp;6
+469;Snapper Whip;Wp;4
+470;Hill Crystal
+471;Catapult of Doom;Mi;7
+472;Dagger of Doom;Pt;7
+473;Pike of Doom;Pl;7
+474;Hammer of Doom;Ba;7
+475;Blade of Doom;Ed;7
+476;Scourge of Doom;Wp;7
+477;King's Sword;Ed;7
+478;Executioners Blade;Ed;7
+479;Ancient War Sword;Ed;7
+480;Hairy Coconut
+481;High Bodden Statue
+549;Bataroo Egg
+802;Ensnare Creature
+805;Light Armour
+811;Battle Dexterity
+822;Fire Shield
+828;Armour
+832;Flee Fast
+844;Battle Slowness
+851;Fool's Cry
+852;Alarm
+853;Confuse Spell
+856;Magic Silver
+862;Heavy Armour
+875;Anti-Spell
+877;Reflect
+889;Charm Foe
+900;High Bodden Spell
+901;Fireball
+903;Blinding Light
+905;Deep Shadows
+907;Frost Blast
+909;Flaming Sphere
+910;Ball Lightning
+911;Ice Storm
+917;Burning Hands
+922;Enchant Weapon
+924;Sleep
+928;Fear
+933;Lightning
+955;Magic Bolts
+966;Venom Strike
+977;Dragon Breath
+981;Hamper Weapons
+987;Weakness
+996;Mystic Hunting Spear

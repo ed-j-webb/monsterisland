@@ -2,14 +2,16 @@ package net.edwebb.jim.factory;
 
 import java.awt.Point;
 
-import net.edwebb.jim.data.Decoder;
 import net.edwebb.jim.data.MapData;
+import net.edwebb.mi.data.Coordinate;
+import net.edwebb.mi.data.Decoder;
 
 
 /**
  * A class that can diff two MapData objects into a new one
  * @author Ed Webb
  *
+ * @deprecated Not used any more?
  */
 public class Diff {
 	/**
@@ -25,12 +27,14 @@ public class Diff {
 	 * @return a MapData containing the differences in newData from baseData
 	 */
 	public static MapData diff(MapData newData, MapData baseData) {
-		if (newData.getCoord() == null || baseData.getCoord() == null) {
+		if (newData.getOffset() == null || baseData.getOffset() == null) {
 			throw new IllegalArgumentException("Both MapData objects must have their co-ordinate systems set");
 		}
 
 		// Calculate the offset between the top-left of the maps
-		Point off = newData.getCoord().getOffset(baseData.getCoord());
+		Coordinate newCoordinate = new Coordinate(new Point(newData.getOffX(), newData.getOffY()), newData.getOffset());
+		Coordinate baseCoordinate = new Coordinate(new Point(baseData.getOffX(), baseData.getOffY()), baseData.getOffset());
+		Point off = newCoordinate.getOffset(baseCoordinate);
 
 		MapData data = new MapData(newData.getTop() - off.y, newData.getLeft()
 				- off.x, newData.getWidth(), newData.getHeight());
@@ -38,7 +42,7 @@ public class Diff {
 		off.x = newData.getLeft() + off.x - baseData.getLeft();
 		off.y = newData.getTop() - off.y - baseData.getTop();
 
-		data.setCoord(baseData.getCoord());
+		data.setOffset(baseCoordinate.getOffset().x, baseCoordinate.getOffset().y, baseCoordinate.getName());
 		for (int x = 0; x < newData.getWidth(); x++) {
 			for (int y = 0; y < newData.getHeight(); y++) {
 				data.setSquare(x, y, diffSquare(newData.getSquare(x, y), baseData.getSquare(x + off.x, y - off.y)));

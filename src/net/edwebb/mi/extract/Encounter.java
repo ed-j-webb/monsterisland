@@ -11,11 +11,11 @@ public abstract class Encounter {
 
 	protected Encounter parent;
 	protected List<Encounter> encounters = new ArrayList<Encounter>();
-	protected int monsterID;
+	protected int monsterNumber;
 	protected int turnNumber;
 	protected int encounterNumber;
 	protected int subEncounterNumber;
-	protected int locationID;
+	protected String locationCode;
 	protected int muscle;
 	protected int armourClass;
 	protected int opponentAC;
@@ -37,12 +37,12 @@ public abstract class Encounter {
 	public void setParent(Encounter parent) {
 		this.parent = parent;
 		parent.getEncounters().add(this);
-		this.monsterID = parent.getMonsterID();
+		this.monsterNumber = parent.getMonsterNumber();
 		this.turnNumber = parent.getTurnNumber();
 		this.encounterNumber = parent.getEncounterNumber();
 		this.subEncounterNumber = parent.getSubEncounterNumber();
-		if (locationID == 0) {
-			locationID = parent.getLocationID();
+		if (locationCode == null) {
+			locationCode = parent.getLocationCode();
 		}
 		this.muscle = parent.getMuscle(); 
 		this.x = parent.getX();
@@ -54,8 +54,8 @@ public abstract class Encounter {
 	
 	public abstract String getData();
 
-	public int getMonsterID() {
-		return monsterID;
+	public int getMonsterNumber() {
+		return monsterNumber;
 	}
 
 	public int getTurnNumber() {
@@ -82,8 +82,8 @@ public abstract class Encounter {
 		this.subEncounterNumber = subEncounterNumber;
 	}
 
-	public int getLocationID() {
-		return locationID;
+	public String getLocationCode() {
+		return locationCode;
 	}
 
 	public int getMuscle() {

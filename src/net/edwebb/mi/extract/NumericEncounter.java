@@ -61,7 +61,7 @@ public class NumericEncounter extends Encounter {
 	public String getData() {
 			StringBuffer sb = new StringBuffer();
 			sb.append("Encounter-Numeric,");
-			sb.append(monsterID);
+			sb.append(monsterNumber);
 			sb.append(",");
 			sb.append(turnNumber);
 			sb.append(",");
@@ -69,7 +69,7 @@ public class NumericEncounter extends Encounter {
 			sb.append(",");
 			sb.append(subEncounterNumber);
 			sb.append(",");
-			sb.append(locationID);
+			sb.append(locationCode);
 			sb.append(",");
 			sb.append(typeID);
 			sb.append(",");

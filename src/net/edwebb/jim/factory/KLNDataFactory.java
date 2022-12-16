@@ -16,9 +16,9 @@ import java.util.Set;
 
 import javax.swing.filechooser.FileFilter;
 
-import net.edwebb.jim.data.Decoder;
-import net.edwebb.jim.data.FeatureData;
 import net.edwebb.jim.data.MapData;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Decoder;
 
 public class KLNDataFactory implements DataFactory {
 
@@ -148,7 +148,7 @@ public class KLNDataFactory implements DataFactory {
 		reader.close();
 
 		short TRAIL = Decoder.shortFromString("TRL");
-		if (FeatureData.getInstance().getFeature(TRAIL) == null) {
+		if (DataStore.getInstance().getFeatureById(TRAIL) == null) {
 			throw new IllegalStateException("Cannot find the Trail feature using code TRL");
 		}
 
@@ -185,7 +185,7 @@ public class KLNDataFactory implements DataFactory {
 						if (bits[0].trim().length() > 0) {
 							String terr = bits[0].replaceAll("\\*", "");
 							short[] id = getIDsForKLN(terr);
-							if (id.length > 0 && FeatureData.getInstance().isValid(id[0])) {
+							if (id.length > 0 && DataStore.getInstance().isValid(id[0])) {
 								s = Short.valueOf(id[0]);
 							} else {
 								unmatched.add(terr);
@@ -208,7 +208,7 @@ public class KLNDataFactory implements DataFactory {
 							} else {
 								short[] id = getIDsForKLN(bits[j]);
 								for (int k = 0; k < id.length; k++) {
-									if (id[k] != 0 && FeatureData.getInstance().isValid(id[k])) {
+									if (id[k] != 0 && DataStore.getInstance().isValid(id[k])) {
 										list.add(Short.valueOf(id[k]));
 									} else {
 										unmatched.add(bits[j]);

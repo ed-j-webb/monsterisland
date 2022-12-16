@@ -6,17 +6,17 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.geom.Path2D;
 
-import net.edwebb.jim.data.Feature;
-import net.edwebb.jim.data.FeatureData;
-import net.edwebb.jim.data.Terrain;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Feature;
+import net.edwebb.mi.data.Terrain;
 
 public class TerrainDecorator implements Decorator {
 
 	public void decorate(Graphics2D g2d, Point sqr, int px, int py, MapModel model, MapSearch search) {
 		short[] square = model.getSquare(sqr);
-		Terrain t = FeatureData.getInstance().getTerrain(square[0]);
+		Terrain t = DataStore.getInstance().getTerrain(square[0]);
 		if (t != null) {
 			g2d.setPaint(t.getTexture());
 			g2d.fillRect(px, py, model.getSize(), model.getSize());
@@ -25,7 +25,7 @@ public class TerrainDecorator implements Decorator {
 		}
 		
 		for(int i = 1; i < square.length; i++) {
-			Feature f = FeatureData.getInstance().getFeature(square[i]);
+			Feature f = DataStore.getInstance().getFeatureById(square[i]);
 			if (f != null && f instanceof Terrain) {
 				drawTerrain(g2d, (Terrain)f, px, py, model);
 			}

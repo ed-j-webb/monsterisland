@@ -15,7 +15,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.border.EtchedBorder;
 
-import net.edwebb.jim.data.Feature;
+import net.edwebb.mi.data.Feature;
 
 /**
  * A JPanel that contains a feature and a button that allows the feature to be removed from the square

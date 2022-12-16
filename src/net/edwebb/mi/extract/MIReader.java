@@ -10,7 +10,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import net.edwebb.mi.db.DataStore;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Foe;
+import net.edwebb.mi.data.Item;
 
 
 /**
@@ -246,33 +248,36 @@ public class MIReader {
 	}
 
 	private void updateEquipment(String equip, Stats theStats) {
-		String itemClass = DataStore.getInstance().getEquipmentCode(equip);
-		if (itemClass.equals("")) {
+		Item item = DataStore.getInstance().getItem(equip);
+		if (item == null) {
 			System.out.println("Cannot work out what this: " + equip + " is.");
-		} else if (itemClass.equals("Mi")) {
-			theStats.getEquip().put("Missile Weapon:", equip);
-		} else if (itemClass.equals("Gr")) {
-			theStats.getEquip().put("Greaves:", equip);
-		} else if (itemClass.equals("Ga")) {
-			theStats.getEquip().put("Gauntlets:", equip);
-		} else if (itemClass.equals("Gr")) {
-			theStats.getEquip().put("Greaves:", equip);
-		} else if (itemClass.equals("He")) {
-			theStats.getEquip().put("Helm:", equip);
-		} else if (itemClass.equals("Bo")) {
-			theStats.getEquip().put("Body Armor:", equip);
-		} else if (itemClass.equals("De")) {
-			theStats.getEquip().put("Defensive Weapon:", equip);
-		} else if (itemClass.equals("Am")) {
-			theStats.getEquip().put("Amulet:", equip);
-		} else if (itemClass.equals("Ch")) {
-			theStats.getEquip().put("Charm:", equip);
-		} else if (itemClass.equals("Ri")) {
-			theStats.getEquip().put("Ring:", equip);
-		} else if ("BaEdPtPlWp".contains(itemClass)) {
-			theStats.getEquip().put("Primary Weapon:", equip);
+		} else if (item.getEquipType() == null) {
+			System.out.println("This: " + equip + " doesn't have an equipment type.");
 		} else {
-			System.out.println("Cannot work out what this: " + equip + " is.");
+			String equipClass = item.getEquipType().name();
+			if ("BaEdPtPlWp".contains(equipClass)) {
+				theStats.getEquip().put("Primary Weapon:", equip);
+			} else if ("Mi".equals(equipClass)) {
+				theStats.getEquip().put("Missile Weapon:", equip);
+			} else if ("Gr".equals(equipClass)) {
+				theStats.getEquip().put("Greaves:", equip);
+			} else if ("Ga".equals(equipClass)) {
+				theStats.getEquip().put("Gauntlets:", equip);
+			} else if ("He".equals(equipClass)) {
+				theStats.getEquip().put("Helm:", equip);
+			} else if ("Bo".equals(equipClass)) {
+				theStats.getEquip().put("Body Armor:", equip);
+			} else if ("De".equals(equipClass)) {
+				theStats.getEquip().put("Defensive Weapon:", equip);
+			} else if ("Am".equals(equipClass)) {
+				theStats.getEquip().put("Amulet:", equip);
+			} else if ("Ch".equals(equipClass)) {
+				theStats.getEquip().put("Charm:", equip);
+			} else if ("Ri".equals(equipClass)) {
+				theStats.getEquip().put("Ring:", equip);
+			} else {
+				System.out.println("Cannot work out what this: " + equip + " is.");
+			}
 		}
 	}
 	
@@ -299,7 +304,7 @@ public class MIReader {
 			turn.setTurnNumber(Integer.parseInt(words[pos + 1]));
 			pos++;
 		} else if (match("MONSTER#") || match ("MONSTERtt")) {
-			turn.setMonsterNumber(Integer.parseInt(words[pos + 1]));
+			turn.setMonsterNumber(Integer.valueOf(words[pos + 1]));
 			pos++;
 		} else if (match("* Skin Toughness.]")) {
 			if (stats != null && stats.getStats().containsKey("Skin Toughness")) {
@@ -307,7 +312,7 @@ public class MIReader {
 				st += getNumber(words[pos]);
 				stats.getStats().put("Skin Toughness", st);
 			}
-		} else if (match("You break camp.") || match("You exit the fort.") || match("You retrieve your Bird Trap.") || match ("didn't recover any health between turns.")) {
+		} else if (match("You break camp.") || match("You exit the fort.") || match("You retrieve your Bird Trap.") || match("didn't recover any health between turns.") || match("to your gain.")) {
 			pos += 2;
 			if (statsOnly) {
 				mode.set(0, MODE_STATS);
@@ -505,8 +510,7 @@ public class MIReader {
 			Round rnd = new Round();
 			rnd.setType(Round.SPELL);
 			rnd.setParent(enc);
-			rnd.setWeapon("Battle Slowness");
-			rnd.setWeaponID(844);
+			rnd.setWeapon(DataStore.getInstance().getItem("Battle Slowness"));
 			mode.set(0, MODE_OPP_DEF_SPELL);
 		} else if (match("spell is successful!")) {
 			mode.set(0, MODE_DEF_SPELL);
@@ -531,12 +535,11 @@ public class MIReader {
 					sb.append(" ");
 				}
 				String spell = sb.toString().trim(); 
-				rnd.setWeapon(spell);
-				if (spell.equals("Armour") || spell.equals("Armor")) {
-					rnd.setWeaponID(828);
-				} else if (sb.toString().equals("Anti-Spell")) {
-					rnd.setWeaponID(875);
+				if (spell.equals("Armor")) {
+					spell = "Armour";
 				}
+
+				rnd.setWeapon(DataStore.getInstance().getItem(spell));
 			}
 			mode.set(0, MODE_OPP_DEF_SPELL);
 		}
@@ -551,8 +554,7 @@ public class MIReader {
 			rnd.setType(Round.SPELL);
 			rnd.setMonster(false);
 			rnd.setParent(enc);
-			rnd.setWeapon("Armour");
-			rnd.setWeaponID(828);
+			rnd.setWeapon(DataStore.getInstance().getItem("Armour"));
 			mode.set(0, MODE_MISSILE);
 		} else if (match("You note that your foe's entire body is glowing slightly.")) {
 			mode.set(0, MODE_OPP_DEF_SPELL);
@@ -560,8 +562,7 @@ public class MIReader {
 			rnd.setType(Round.SPELL);
 			rnd.setMonster(false);
 			rnd.setParent(enc);
-			rnd.setWeapon("Light Armour");
-			rnd.setWeaponID(805);
+			rnd.setWeapon(DataStore.getInstance().getItem("Light Armour"));
 			mode.set(0, MODE_MISSILE);
 		}
 	}
@@ -618,9 +619,9 @@ public class MIReader {
 					if (weapon != null && weapon.endsWith(",")) {
 						weapon = weapon.substring(0, weapon.length()-1);
 					}
-					rnd.setDamageClass(DataStore.getInstance().getItemClass(weapon));
-					rnd.setWeaponID(DataStore.getInstance().getItemID(weapon));
-					rnd.setWeapon(weapon);
+					//rnd.setDamageClass(DataStore.getInstance().getItemClass(weapon));
+					rnd.setWeapon(DataStore.getInstance().getItem(weapon));
+					//rnd.setWeapon(weapon);
 					if (rnd.isMonster()) {
 						rnd.setWeaponSkill(getWeaponSkill(weapon));
 					}
@@ -648,7 +649,7 @@ public class MIReader {
 			sb.append(" ");
 			i++;
 		}
-		return sb.toString();
+		return sb.toString().trim();
 	}
 	
 	private void checkOffSpell() {
@@ -660,15 +661,13 @@ public class MIReader {
 			Round rnd = new Round();
 			rnd.setParent(enc);
 			rnd.setType(Round.SPELL);
-			rnd.setWeapon("Enchant Weapon");
-			rnd.setWeaponID(922);
+			rnd.setWeapon(DataStore.getInstance().getItem("Enchant Weapon"));
 			rnd.setMonster(true);
 		} else if (match("A cold breeze blows past.")) {
 			Round rnd = new Round();
 			rnd.setParent(enc);
 			rnd.setType(Round.SPELL);
-			rnd.setWeapon("Ice Storm");
-			rnd.setWeaponID(911);
+			rnd.setWeapon(DataStore.getInstance().getItem("Ice Storm"));
 			rnd.setMonster(true);
 			pos += 24;
 			rnd.setHealth(getNumber(words[pos]));
@@ -676,8 +675,7 @@ public class MIReader {
 			Round rnd = new Round();
 			rnd.setParent(enc);
 			rnd.setType(Round.SPELL);
-			rnd.setWeapon("Ball Lightning");
-			rnd.setWeaponID(910);
+			rnd.setWeapon(DataStore.getInstance().getItem("Ball Lightning"));
 			rnd.setMonster(true);
 			rnd.setShots(getNumber(words[pos-1]));
 			rnd.setHits(getNumber(words[pos-1]));
@@ -696,9 +694,8 @@ public class MIReader {
 			rnd.setType(Round.SPELL);
 			rnd.setMonster(false);
 			rnd.setParent(enc);
-			rnd.setWeapon("Lightning");
+			rnd.setWeapon(DataStore.getInstance().getItem("Lightning"));
 			rnd.setHealth(getNumber(words[pos+6]));
-			rnd.setWeaponID(933);
 			mode.set(0, MODE_MISSILE);			
 		} else if (match("Rocks and stones begin to fly through the air")) {
 			mode.set(0, MODE_OPP_OFF_SPELL);
@@ -706,9 +703,8 @@ public class MIReader {
 			rnd.setType(Round.SPELL);
 			rnd.setMonster(false);
 			rnd.setParent(enc);
-			rnd.setWeapon("Unknown");
+			rnd.setWeapon(DataStore.getInstance().getItem("No Item"));
 			rnd.setHealth(getNumber(words[pos+19]));
-			rnd.setWeaponID(0);
 			mode.set(0, MODE_MISSILE);			
 		}
 	}
@@ -732,9 +728,9 @@ public class MIReader {
 				if (weapon != null && weapon.endsWith(",")) {
 					weapon = weapon.substring(0, weapon.length()-1);
 				}
-				rnd.setDamageClass(DataStore.getInstance().getItemClass(weapon));
-				rnd.setWeapon(weapon);
-				rnd.setWeaponID(DataStore.getInstance().getItemID(weapon));
+				//rnd.setDamageClass(DataStore.getInstance().getItemClass(weapon));
+				//rnd.setWeapon(weapon);
+				rnd.setWeapon(DataStore.getInstance().getItem(weapon));
 				if (rnd.isMonster()) {
 					rnd.setWeaponSkill(getWeaponSkill(weapon));
 				}
@@ -744,24 +740,27 @@ public class MIReader {
 		}
 	}
 
-	public int getWeaponSkill(String item) {
-		String code = DataStore.getInstance().getEquipmentCode(item);
-		if (code == null || code.length() == 0) {
+	public int getWeaponSkill(String itemName) {
+		Item item = DataStore.getInstance().getItem(itemName);
+		if (item == null || item.getEquipType() == null) {
 			return 0;
-		} else if (code.equals("Ba")) {
-			return stats.getStats().get("Bashing:");
-		} else if (code.equals("Mi")) {
-			return stats.getStats().get("Missile:");
-		} else if (code.equals("Pl")) {
-			return stats.getStats().get("Pole:");
-		} else if (code.equals("Pt")) {
-			return stats.getStats().get("Pointed:");
-		} else if (code.equals("Wp")) {
-			return stats.getStats().get("Whip:");
-		} else if (code.equals("Ed")) {
-			return stats.getStats().get("Edged:");
 		} else {
-			return 0;
+			String code = item.getEquipType().name();
+			if (code.equals("Ba")) {
+				return stats.getStats().get("Bashing:");
+			} else if (code.equals("Mi")) {
+				return stats.getStats().get("Missile:");
+			} else if (code.equals("Pl")) {
+				return stats.getStats().get("Pole:");
+			} else if (code.equals("Pt")) {
+				return stats.getStats().get("Pointed:");
+			} else if (code.equals("Wp")) {
+				return stats.getStats().get("Whip:");
+			} else if (code.equals("Ed")) {
+				return stats.getStats().get("Edged:");
+			} else {
+				return 0;
+			}
 		}
 	}
 
@@ -770,7 +769,7 @@ public class MIReader {
 			Round rnd = new Round();
 			rnd.setType(Round.MELEE);
 			rnd.setHealth(getNumber(words[pos - 1], 0));
-			rnd.setWeapon("Wrestling");
+			rnd.setWeapon(DataStore.getInstance().getItem("Wrestling"));
 			rnd.setMonster(enc.getEncounters().size() % 2 == 0 ? true : false);
 			rnd.setParent(enc);
 		}
@@ -880,7 +879,7 @@ public class MIReader {
 					if (item.endsWith(",") || item.endsWith(".")) {
 						item = item.substring(0, item.length()-1);
 					}
-					te.setItem(item);
+					te.setItem(DataStore.getInstance().getItem(item));
 					
 					if (left) {
 						te.setQuantity(-te.getQuantity());
@@ -1042,6 +1041,8 @@ public class MIReader {
 			le.setLocation("Bat Cave");
 		} else if (match("A grey bat flying through the jungle")) {
 			le.setLocation("Bat Cave");
+		} else if (match("Fungus Forest")) {
+			le.setLocation("Fungus Forest");
 		} else if (match("from a long vine.")) {
 			le.setLocation("Bodden Camp");
 			mode.add(0, MODE_TORCH);
@@ -1081,7 +1082,7 @@ public class MIReader {
 	private void checkCreature() {
 		if (match("(named")) {
 			pos++;
-			((BattleEncounter) enc).setCreature(words[pos]);
+			((BattleEncounter) enc).setFoe(getFoe(words[pos]), words[pos]);
 		} else if (match("vs.")) {
 			pos++;
 			if (match("a") || match("an")) {
@@ -1104,7 +1105,7 @@ public class MIReader {
 					enc.setParent(le);
 				}
 			}
-			((BattleEncounter) enc).setCreature(creature);
+			((BattleEncounter) enc).setFoe(getFoe(creature), creature);
 			
 			if (mode.get(0) == MODE_WRESTLE) {
 				mode.add(0, MODE_GRAPPLE);
@@ -1114,6 +1115,26 @@ public class MIReader {
 		}
 	}
 
+	private Foe getFoe(String foeName) {
+		if (enc.getParent().getEncType().equals("Location")) {
+			LocationEncounter le = (LocationEncounter)enc.getParent();
+			if (le == null) {
+				System.out.println("A Location Encounter without a Location");
+			} else if (le.getLocation().getName().equals("Loggerhead Camp")) {
+				return DataStore.getInstance().getRace("Loggerhead");
+			} else if (le.getLocation().getName().equals("Hillock")) {
+				return DataStore.getInstance().getRace("Knolltir");
+			} else if (le.getLocation().getName().equals("Mine Shaft")) {
+				return DataStore.getInstance().getRace("Rock Troll");
+			} else if (le.getLocation().getName().equals("Bodden Camp") && foeName.toUpperCase().equals(foeName)) {
+				return DataStore.getInstance().getRace("Bodden");
+			} else if (le.getLocation().getName().equals("Bodden Camp") && foeName.contains("'")) {
+				return DataStore.getInstance().getRace("High Bodden");
+			}
+		}
+		return DataStore.getInstance().getCreature(foeName);
+	}
+		
 	private void checkTreasure() {
 		if (match("They explain how to make *") || match("Pulling it out you find...*")) {
 			boolean skip = false;
@@ -1140,7 +1161,7 @@ public class MIReader {
 				TreasureEncounter te = new TreasureEncounter();
 				te.setParent(enc);
 				te.setQuantity(-1);
-				te.setItem(item);
+				te.setItem(DataStore.getInstance().getItem(item));
 			}
 		} else if (match("reach in and find *") && !match("reach in and find a Treasure")) {
 			pos += 4;
@@ -1163,7 +1184,7 @@ public class MIReader {
 			TreasureEncounter te = new TreasureEncounter();
 			te.setParent(enc);
 			te.setQuantity(quantity);
-			te.setItem(item);
+			te.setItem(DataStore.getInstance().getItem(item));
 		} else if (match("*Treasure - ")) {
 			pos += 2;
 			boolean fullStop = false;
@@ -1202,7 +1223,7 @@ public class MIReader {
 					}
 					pos++;
 				}
-				te.setItem(sb.toString().trim());
+				te.setItem(DataStore.getInstance().getItem(sb.toString().trim()));
 			}
 		}
 	}
@@ -1268,8 +1289,29 @@ public class MIReader {
 						thing.append(" ");
 					}
 					if (words[pos].endsWith(",") || words[pos].endsWith(".") || match ("and")) {
-						if (thing.toString().trim().length() > 0 && !thing.toString().startsWith("None")) {
-							Sighting s = new Sighting(x, y, thing.toString().startsWith("Kongo-Mongo tree") ? "Location" : type, thing.toString());
+						String name = thing.toString();
+						if (name.startsWith("Temple of Fuvah")) {
+							Sighting s = new Sighting(x, y, type, "Rebuilt Temple. ");
+							turn.getSightings().add(s);
+							s = new Sighting(x, y, type, "Fuvah. ");
+							turn.getSightings().add(s);
+						} else if (name.startsWith("Kabuki Temple")) {
+							Sighting s = new Sighting(x, y, type, "Rebuilt Temple. ");
+							turn.getSightings().add(s);
+							s = new Sighting(x, y, type, "Kabuki. ");
+							turn.getSightings().add(s);
+						} else if (name.startsWith("Shroud Temple")) {
+							Sighting s = new Sighting(x, y, type, "Rebuilt Temple. ");
+							turn.getSightings().add(s);
+							s = new Sighting(x, y, type, "Shroud. ");
+							turn.getSightings().add(s);
+						} else if (name.trim().length() > 0 && !name.startsWith("None")) {
+							Sighting s;
+							if (name.startsWith("Kongo-Mongo tree") || name.startsWith("Hairy Coco Palm Grove")) {
+								s = new Sighting(x, y, "Location", thing.toString());
+							} else {
+								s = new Sighting(x, y, type, thing.toString());
+							}
 							turn.getSightings().add(s);
 						}
 						thing = new StringBuffer();
@@ -1438,6 +1480,10 @@ public class MIReader {
 	private boolean match(String phrase) {
 		if (phrase.contains(" ")) {
 			String[] bits = phrase.split("\\s");
+			// Not enough words to match the phrase against
+			if (bits.length + pos > words.length) {
+				return false;
+			}
 			for (int i = 0; i < bits.length; i++) {
 				if (bits[i].equals("*")) {
 					// continue

@@ -5,7 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.edwebb.mi.db.DataStore;
+import net.edwebb.mi.data.DataStore;
+import net.edwebb.mi.data.Item;
 
 /**
  * @author aaw129
@@ -42,7 +43,7 @@ public class Stats {
 		EQUIP.add("Wrestle Weapon:");
 		EQUIP.add("Defensive Battle Spell:");
 		EQUIP.add("Offensive Battle Spell:");
-
+		
 		STATS.add("Skin Toughness");
 		STATS.add("Toughness");
 		STATS.add("Muscle");
@@ -195,7 +196,7 @@ public class Stats {
 	public String getData() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Stats,");
-		sb.append(turn.getMonsterID());
+		sb.append(turn.getMonsterNumber());
 		sb.append(",");
 		sb.append(turn.getTurnNumber());
 		sb.append(",");
@@ -305,38 +306,38 @@ public class Stats {
 		return ac;
 	}
 	
-	private int getItemClass(String item) {
+	private int getItemClass(String itemName) {
+		if (itemName == null) {
+			return 0;
+		}
+		itemName = itemName.replaceAll("Armor", "Armour");
+		if (itemName.endsWith(",")) {
+			itemName = itemName.substring(0, itemName.length()-1);
+		}
+		if (itemName.equals("Gold Ring")) {
+			itemName = "Gold Ring (Health)";
+		}
+		Item item = DataStore.getInstance().getItem(itemName);
 		if (item == null) {
 			return 0;
 		}
-		item = item.replaceAll("Armor", "Armour");
-		if (item.endsWith(",")) {
-			item = item.substring(0, item.length()-1);
-		}
-		if (item.equals("Gold Ring")) {
-			item = "Gold Ring (Health)";
-		}
-		Integer itemClass = DataStore.getInstance().getItemClass(item);
-		if (itemClass == null) {
-			return 0;
-		}
-		return itemClass;
+		return item.getEquipLevel();
 	}
 	
-	private String getItemID(String item) {
+	private String getItemID(String itemName) {
+		if (itemName == null) {
+			return "";
+		}
+		if (itemName.endsWith(",")) {
+			itemName = itemName.substring(0, itemName.length()-1);
+		}
+		if (itemName.equals("Gold Ring")) {
+			itemName = "Gold Ring (Invisibility)";
+		}
+		Item item = DataStore.getInstance().getItem(itemName);
 		if (item == null) {
 			return "";
 		}
-		if (item.endsWith(",")) {
-			item = item.substring(0, item.length()-1);
-		}
-		if (item.equals("Gold Ring")) {
-			item = "Gold Ring (Invisibility)";
-		}
-		Integer itemID = DataStore.getInstance().getItemID(item);
-		if (itemID == null) {
-			return "";
-		}
-		return itemID.toString();
+		return Short.toString(item.getId());
 	}
 }

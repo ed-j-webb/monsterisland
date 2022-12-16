@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Iterator;
 
-import net.edwebb.mi.db.DataStore;
+import net.edwebb.mi.data.DataStore;
 
 public class MIExtractor {
 
@@ -32,7 +32,7 @@ public class MIExtractor {
 		Turn turn = reader.read(file, x, y, stats, statsOnly);
 		if (mode.equals("R")) {
 			if (writer != null) {
-				writer.printData(turn, 0);
+				writer.printData(turn);
 			}
 		} else if (mode.equals("N") || mode.equals("M")) {
 			// Output nothing this is the first turn to get the stats
@@ -51,7 +51,7 @@ public class MIExtractor {
 		Turn turn = reader.read(input, x, y, stats, statsOnly);
 		if (mode.equals("R")) {
 			if (writer != null) {
-				writer.printData(turn, 0);
+				writer.printData(turn);
 			}
 		} else if (mode.equals("N") || mode.equals("M")) {
 			// Output nothing this is the first turn to get the stats
