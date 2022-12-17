@@ -55,26 +55,32 @@ public class DataStore {
 	
 	private List<Coordinate> coords;
 	
+	// Stores the fingerprint for every known image on the printed map
+	// This is populated from an editable config file
+	private Map<Integer, String> mapIcons = new HashMap<Integer, String>();
+	
+	
 	private static DataStore instance;
 	
 	public static DataStore getInstance() {
 		return instance;
 	}
 	
-	public static void createInstance(File featureFolder) throws IOException {
-		instance = new DataStore(featureFolder);
+	public static void createInstance(File dataDir) throws IOException {
+		instance = new DataStore(dataDir);
 	}
 	
-	private DataStore(File featureFolder) throws IOException {
-		File imageFolder = new File(featureFolder, "images");
-		loadTerrain(new File(featureFolder, "terrain.dat"), imageFolder);
-		loadLocations(new File(featureFolder, "locations.dat"), imageFolder);
-		loadPlants(new File(featureFolder, "plants.dat"), imageFolder);
-		loadCreatures(new File(featureFolder, "creatures.dat"), imageFolder);
-		loadCoOrdinates(new File(featureFolder, "coordinates.csv"));
-		loadRaces(new File(featureFolder, "races.dat"));
-		loadItems(new File(featureFolder, "items.dat"));
-		loadFlags(new File(featureFolder, "flags.dat"), imageFolder);
+	private DataStore(File dataDir) throws IOException {
+		File imageDir = new File(dataDir, "images");
+		loadTerrain(new File(dataDir, "terrain.dat"), imageDir);
+		loadLocations(new File(dataDir, "locations.dat"), imageDir);
+		loadPlants(new File(dataDir, "plants.dat"), imageDir);
+		loadCreatures(new File(dataDir, "creatures.dat"), imageDir);
+		loadCoOrdinates(new File(dataDir, "coordinates.dat"));
+		loadRaces(new File(dataDir, "races.dat"));
+		loadItems(new File(dataDir, "items.dat"));
+		loadFlags(new File(dataDir, "flags.dat"), imageDir);
+		loadMapIcons(new File(dataDir, "mapicons.dat"));
 	}
 	
 	public Terrain getTerrain(short index) {
@@ -364,6 +370,10 @@ public class DataStore {
 		return coords;
 	}
 	
+	public Map<Integer, String> getMapIcons() {
+		return Collections.unmodifiableMap(mapIcons);
+	}
+	
 	/**
 	 * Returns true if the code is contained in the list of valid codes
 	 * @param code the code to check
@@ -382,7 +392,7 @@ public class DataStore {
 		return getFeatureById(index) != null;
 	}
 	
-	private void loadTerrain(File f, File imageFolder) throws IOException {
+	private void loadTerrain(File f, File imageDir) throws IOException {
 		if (!f.exists()) {
 			throw new FileNotFoundException("Cannot find " + f.getAbsolutePath());
 		}
@@ -398,7 +408,7 @@ public class DataStore {
 				String[] part = line.split(";");
 				if (part.length == 4) {
 					short id = Decoder.shortFromChar(part[0]);
-					Terrain t = new Terrain(id, part[0], part[1], Decoder.makeColour(part[2]), Decoder.makeColour(part[3]), Decoder.makeImageIcon(part[0] + ".png", imageFolder));
+					Terrain t = new Terrain(id, part[0], part[1], Decoder.makeColour(part[2]), Decoder.makeColour(part[3]), Decoder.makeImageIcon(part[0] + ".png", imageDir));
 					terrainId.put(id, t);
 					terrainName.put(part[1], t);
 					terrainCode.put(part[0], t);
@@ -412,7 +422,7 @@ public class DataStore {
 		Collections.sort(terrain);
 	}
 	
-	private void loadFlags(File f, File imageFolder) throws IOException {
+	private void loadFlags(File f, File imageDir) throws IOException {
 		if (!f.exists()) {
 			throw new FileNotFoundException("Cannot find " + f.getAbsolutePath());
 		}
@@ -430,7 +440,7 @@ public class DataStore {
 						throw new IllegalArgumentException("The flags must have a value of between 0 and 7. This one is " + id);
 					}
 					try {
-						Flag g = new Flag(id, part[0], part[1], Decoder.shortFromInt(part[2]), Decoder.makeImageIcon(part[3], imageFolder));
+						Flag g = new Flag(id, part[0], part[1], Decoder.shortFromInt(part[2]), Decoder.makeImageIcon(part[3], imageDir));
 						flagId.put(id, g);
 						flag.add(g);
 						valid.add(part[0]);
@@ -445,7 +455,7 @@ public class DataStore {
 		Collections.sort(flag);
 	}
 
-	private void loadLocations(File f, File imageFolder) throws IOException {
+	private void loadLocations(File f, File imageDir) throws IOException {
 		if (!f.exists()) {
 			throw new FileNotFoundException("Cannot find " + f.getAbsolutePath());
 		}
@@ -462,7 +472,7 @@ public class DataStore {
 				if (part.length == 2) {
 					short id = Decoder.shortFromString(part[0]);
 					try {
-						Location l = new Location(id, part[0], part[1], Decoder.makeImageIcon(part[0] + ".png", imageFolder));
+						Location l = new Location(id, part[0], part[1], Decoder.makeImageIcon(part[0] + ".png", imageDir));
 						locationId.put(id, l);
 						locationName.put(part[1], l);
 						locationCode.put(part[0], l);
@@ -480,11 +490,11 @@ public class DataStore {
 		Collections.sort(location);
 	}
 
-	private void loadPlants(File f, File imageFolder) throws IOException {
+	private void loadPlants(File f, File imageDir) throws IOException {
 		if (!f.exists()) {
 			throw new FileNotFoundException("Cannot find " + f.getAbsolutePath());
 		}
-		Plant.setIcon(Decoder.makeImageIcon("plant.png", imageFolder));
+		Plant.setIcon(Decoder.makeImageIcon("plant.png", imageDir));
 		plantId = new HashMap<Short, Plant>();
 		plant = new ArrayList<Plant>();
 		plantName = new HashMap<String, Plant>();
@@ -511,11 +521,11 @@ public class DataStore {
 		Collections.sort(plant);
 	}
 
-	private void loadCreatures(File f, File imageFolder) throws IOException {
+	private void loadCreatures(File f, File imageDir) throws IOException {
 		if (!f.exists()) {
 			throw new FileNotFoundException("Cannot find " + f.getAbsolutePath());
 		}
-		Creature.setIcon(Decoder.makeImageIcon("creature.png", imageFolder));
+		Creature.setIcon(Decoder.makeImageIcon("creature.png", imageDir));
 		creatureId = new HashMap<Short, Creature>();
 		creature = new ArrayList<Creature>();
 		creatureName = new HashMap<String, Creature>();
@@ -626,4 +636,32 @@ public class DataStore {
 			reader.close();
 		}
 	}
+	
+	/**
+	 * Reads the image fingerprint information from the file and returns a Map of 
+	 * Integer fingerprint to feature code
+	 * @param file the image fingerprint file
+	 * @return a Map of fingerprints to feature codes
+	 * @throws IOException
+	 */
+	private void loadMapIcons(File f) throws IOException {
+		if (!f.exists()) {
+			throw new FileNotFoundException("Cannot find " + f.getAbsolutePath());
+		}
+		mapIcons = new HashMap<Integer, String>();
+
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new FileReader(f));
+			String line = reader.readLine();
+			while (line != null) {
+				String[] data = line.split(";");
+				mapIcons.put(Integer.valueOf(data[0]), data[1]);
+				line = reader.readLine();
+			}
+		} finally {
+			reader.close();
+		}
+	}
+	
 }

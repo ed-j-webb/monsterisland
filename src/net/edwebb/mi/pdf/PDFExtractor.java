@@ -5,22 +5,16 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.InflaterInputStream;
 
 import net.edwebb.mi.data.DataStore;
-import net.edwebb.mi.extract.MIExtractor;
-import net.edwebb.mi.extract.Stats;
-import net.edwebb.mi.extract.Turn;
 
 /**
  * A class to read, process and extract data from a Monster Island Turn Results pdf file
@@ -42,7 +36,7 @@ public class PDFExtractor {
 	private static Pattern pagesList = Pattern.compile("/Kids\\[(.*?)\\]");
 	
 	// For each Column on the printed map these are (roughly) where each square is printed
-	// (each square is actually made up of 4 smaller squares which is why there are 2 number's per column)
+	// (each square is actually made up of 4 smaller squares which is why there are 2 numbers per column)
 	private static BigDecimal[] columns = new BigDecimal[] {new BigDecimal("41.01"), new BigDecimal("68.13"), 
 			                                                new BigDecimal("95.25"), new BigDecimal("122.37"), 
 			                                                new BigDecimal("149.49"), new BigDecimal("176.61"), 
@@ -52,50 +46,6 @@ public class PDFExtractor {
 			                                                new BigDecimal("366.45"), new BigDecimal("393.57"), 
 			                                                new BigDecimal("420.69"), new BigDecimal("447.81"), 
 			                                                new BigDecimal("474.93"), new BigDecimal("502.05") };
-
-	// Stores the fingerprint for every known image on the printed map
-	// This is populated from an editable config file
-	private Map<Integer, String> mapIcons = new HashMap<Integer, String>();
-
-
-	/**
-	 * Create a new PDFExtractor using the mapIcons stored in the file
-	 * @param iconFile the File that contains the mapIcon fingerprints
-	 * @throws IOException
-	 */
-	public PDFExtractor(File iconFile) throws IOException {
-		mapIcons = readIconFile(iconFile);
-	}
-
-
-	/**
-	 * Reads the image fingerprint information from the file and returns a Map of 
-	 * Integer fingerprint to feature code
-	 * @param file the image fingerprint file
-	 * @return a Map of fingerprints to feature codes
-	 * @throws IOException
-	 */
-	private Map<Integer, String> readIconFile(File file) throws IOException {
-		Map<Integer, String> map = new HashMap<Integer, String>();
-
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new FileReader(file));
-			String line = reader.readLine();
-			while (line != null) {
-				String[] data = line.split(";");
-				map.put(Integer.valueOf(data[0]), data[1]);
-				line = reader.readLine();
-			}
-			return map;
-		} finally {
-			try {
-				reader.close();
-			} catch (Throwable t) {
-
-			}
-		}
-	}
 
 	private String decode(byte[] bytes) throws IOException {
 		return decode(bytes, 0, bytes.length);
@@ -318,10 +268,10 @@ public class PDFExtractor {
 								//System.out.print("may be (" + mapRow + ", " + (mapLeft + possible) + "): " );
 							}
 							
-							if (mapIcons.containsKey(fingerprint) && !mapIcons.get(fingerprint).equals("")) {
-								sb.append("(" + mapRow + "," + mapColumn + ") " + mapIcons.get(fingerprint) + "\n");
+							if (DataStore.getInstance().getMapIcons().containsKey(fingerprint) && !DataStore.getInstance().getMapIcons().get(fingerprint).equals("")) {
+								sb.append("(" + mapRow + "," + mapColumn + ") " + DataStore.getInstance().getMapIcons().get(fingerprint) + "\n");
 								//System.out.println(mapIcons.get(fingerprint));
-							} else if (!mapIcons.containsKey(fingerprint)) {
+							} else if (!DataStore.getInstance().getMapIcons().containsKey(fingerprint)) {
 								sb.append("(" + mapRow + "," + mapColumn + ") UNKNOWN-ICON:" + fingerprint + "\n");
 								//System.out.println("Unknown Fingerprint " + fingerprint);
 								//System.out.println();
@@ -348,29 +298,5 @@ public class PDFExtractor {
 	public String extract(File file) throws IOException {
 		PDFData pdfData = getPDFData(file);
 		return extractData(pdfData);
-	}
-	
-	public static void main(String[] args) throws Exception {
-		
-		PDFExtractor pdfExtractor = new PDFExtractor(new File("C:/Dev3/jIsland/data/mapicons.csv"));
-		MIExtractor miExtractor = new MIExtractor(new File("C:/Old Home/D/Ed/"));
-
-		DataStore.createInstance(new File("C:/Dev3/jIsland/data"));
-		
-		String mode = "D";
-	    int[] coords = new int[] {0,0}; //getCoords();  
-		
-		Stats stats = null;
-		
-		// TODO: Write some code to batch the turns to fill in the missing fingerprints
-		//for (int i = 886; i< 1000; i++) {
-		for (int i = 983; i < 1000; i++) {
-			System.out.println("Turn #" + i);
-			String text = pdfExtractor.extract(new File("C:/Old Home/D/Ed/Monster/Turns/5846/5846-" + i + ".pdf"));
-			Turn turn = miExtractor.extract(new StringReader(text), (i==983 ? "N" : mode), coords[0], coords[1], stats);
-			coords[0] = turn.getY();
-			coords[1] = turn.getX();
-			stats = turn.getStats();
-		}
 	}
 }
