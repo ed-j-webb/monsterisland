@@ -1956,13 +1956,7 @@ public class MapController {
 			}
 			
 			File[] files = fc.getSelectedFiles();
-			PDFExtractor pdfExtractor = null;
-			try {
-				pdfExtractor = new PDFExtractor(new File("data/mapicons.csv"));
-			} catch (IOException e) {
-				JOptionPane.showMessageDialog(getFrame(), "Cannot read data from data/mapicons.csv");
-				return;
-			}
+			PDFExtractor pdfExtractor = new PDFExtractor();
 			
 			MIExtractor miExtractor;
 			
