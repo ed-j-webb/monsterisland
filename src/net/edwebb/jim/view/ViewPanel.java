@@ -15,8 +15,12 @@ import javax.swing.JScrollBar;
 
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
+import net.edwebb.jim.model.events.MapChangeEvent;
+import net.edwebb.jim.model.events.MapChangeListener;
+import net.edwebb.jim.model.events.ViewChangeEvent;
+import net.edwebb.jim.model.events.MapChangeEvent.MAP_CHANGE_TYPE;
 
-public class ViewPanel extends JPanel {
+public class ViewPanel extends JPanel implements MapChangeListener {
 
 	/**
 	 * 
@@ -32,16 +36,22 @@ public class ViewPanel extends JPanel {
 	private MapModel model;
 	
 	public ViewPanel(MapModel model) {
-		this.model = model;
+		setModel(model);
 		this.setPreferredSize(new Dimension(500, 300));
 		buildView();
 	}
 	
 	public void setModel(MapModel model) {
+		if (this.model != null) {
+			this.model.removeMapChangeListener(this);
+		}
 		this.model = model;
+		model.addMapChangeListener(this);
+		
 		getPanMap().setModel(model);
 		getRuleHorizontal().setModel(model);
 		getRuleVertical().setModel(model);
+		
 		getScrHorizontal().setMinimum(model.getBounds().x);
 		getScrHorizontal().setValue(model.getView().x);
 		getScrHorizontal().setMaximum(model.getBounds().x + model.getBounds().width - model.getView().width + getScrHorizontal().getBlockIncrement() + 1);
@@ -107,18 +117,40 @@ public class ViewPanel extends JPanel {
 	}
 	
 	@Override
+	public void mapChanged(MapChangeEvent event) {
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.VIEW)) {
+			ViewChangeEvent viewEvent = (ViewChangeEvent)event;
+			if (viewEvent.getNewView() != null) {
+				getScrHorizontal().setValue(viewEvent.getNewView().x);
+				getScrVertical().setValue(-viewEvent.getNewView().y);
+
+				// TODO Don't think these are needed as they don't change after a model has been loaded
+				//getScrHorizontal().setMaximum(model.getBounds().x + model.getBounds().width - model.getView().width + getScrHorizontal().getBlockIncrement() + 1);
+				//getScrVertical().setMaximum(model.getBounds().height - model.getBounds().y - model.getView().height + getScrVertical().getBlockIncrement() + 1);
+				repaint();
+			}
+			return;
+		}
+
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.TERRAIN)
+		 || event.getChangeType().equals(MAP_CHANGE_TYPE.SELECTED)
+		 || event.getChangeType().equals(MAP_CHANGE_TYPE.COORDINATE)
+		 || event.getChangeType().equals(MAP_CHANGE_TYPE.FEATURE)
+		 || event.getChangeType().equals(MAP_CHANGE_TYPE.FLAG)
+		 || event.getChangeType().equals(MAP_CHANGE_TYPE.NOTE)) {
+			repaint();
+			return;
+		}
+	}
+
+	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		
-		// BAD Shouldn't really be adjusting scrollbars in the paint method but I know this will be called whenever the model changes
-		getScrHorizontal().setValue(model.getView().x);
-		getScrHorizontal().setMaximum(model.getBounds().x + model.getBounds().width - model.getView().width + getScrHorizontal().getBlockIncrement() + 1);
-		getScrVertical().setValue(-model.getView().y);
-		getScrVertical().setMaximum(model.getBounds().height - model.getBounds().y - model.getView().height + getScrVertical().getBlockIncrement() + 1);
 	}
 
 	public void setViewFlags(boolean flag) {
 		getPanMap().setViewFlags(flag);
+		repaint();
 	}
 	public boolean getViewFlags() {
 		return getPanMap().isViewFlags();

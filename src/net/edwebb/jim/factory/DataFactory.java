@@ -6,7 +6,7 @@ import java.util.Set;
 
 import javax.swing.filechooser.FileFilter;
 
-import net.edwebb.jim.data.MapData;
+import net.edwebb.jim.model.MapData;
 
 /**
  * An interface for DataFactory classes. These are classes that can read from and save to different

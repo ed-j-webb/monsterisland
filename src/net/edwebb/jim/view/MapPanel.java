@@ -4,7 +4,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-//import java.awt.geom.Path2D;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +11,7 @@ import javax.swing.JPanel;
 
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
+
 import net.edwebb.jim.view.decorator.BorderDecorator;
 import net.edwebb.jim.view.decorator.Decorator;
 import net.edwebb.jim.view.decorator.FeatureDecorator;
@@ -42,7 +42,7 @@ public class MapPanel extends JPanel {
 	
 	public MapPanel(MapModel model) {
 		fnt = new Font("Arial", Font.BOLD, 9);
-		this.model = model;
+		setModel(model);
 		decorators.put(BORDER, new BorderDecorator());
 		decorators.put(TERRAIN, new TerrainDecorator());
 		decorators.put(FEATURE, new FeatureDecorator());
@@ -127,14 +127,4 @@ public class MapPanel extends JPanel {
 			decorators.get(BORDER).decorate(g2d, sqr, px, py, model, search);
 		}
 	}
-
-//	private Path2D.Double getDiffTriangle(MapModel model, int px, int py, int size) {
-//		Path2D.Double triangle = new Path2D.Double();
-//		triangle.moveTo(px, py + model.getSize());
-//		triangle.lineTo(px, py + model.getSize() - size);
-//		triangle.lineTo(px + size, py + model.getSize());
-//		triangle.closePath();
-//		return triangle;
-//	}
-
 }

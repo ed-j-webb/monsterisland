@@ -91,7 +91,6 @@ public class MapFeature extends JPanel {
 			delete.setContentAreaFilled(false);	
 			if (decoration != null) {
 				delete.setOpaque(true);
-				//delete.setBackground(decoration);
 			}
 		}
 		return delete;
@@ -112,7 +111,6 @@ public class MapFeature extends JPanel {
 			merge.setContentAreaFilled(false);			
 			if (decoration != null) {
 				merge.setOpaque(true);
-				//merge.setBackground(decoration);
 			}
 		}
 		return merge;

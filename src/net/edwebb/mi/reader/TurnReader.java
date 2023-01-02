@@ -15,6 +15,7 @@ import java.util.List;
  * @author Ed Webb
  *
  */
+@Deprecated
 public class TurnReader {
 	
 	// A list of numbers in order

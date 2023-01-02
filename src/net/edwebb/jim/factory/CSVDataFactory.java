@@ -13,7 +13,7 @@ import java.util.Set;
 
 import javax.swing.filechooser.FileFilter;
 
-import net.edwebb.jim.data.MapData;
+import net.edwebb.jim.model.MapData;
 import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Decoder;
 

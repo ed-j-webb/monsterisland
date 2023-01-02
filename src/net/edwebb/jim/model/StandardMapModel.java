@@ -3,18 +3,28 @@ package net.edwebb.jim.model;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
-
-import net.edwebb.jim.data.MapData;
+import net.edwebb.jim.model.events.CoordinateChangeEvent;
+import net.edwebb.jim.model.events.FeatureChangeEvent;
+import net.edwebb.jim.model.events.FlagChangeEvent;
+import net.edwebb.jim.model.events.MapChangeListener;
+import net.edwebb.jim.model.events.NoteChangeEvent;
+import net.edwebb.jim.model.events.SelectedChangeEvent;
+import net.edwebb.jim.model.events.TerrainChangeEvent;
+import net.edwebb.jim.model.events.ViewChangeEvent;
 import net.edwebb.mi.data.Coordinate;
+import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Decoder;
+import net.edwebb.mi.data.Feature;
+import net.edwebb.mi.data.Flag;
+import net.edwebb.mi.data.Terrain;
 
-public class StandardMapModel implements MapModel {
+public class StandardMapModel extends AbstractMapModel {
 
 	private String name;
-	
+
 	private MapData data;
+	
+	private MapModel parent;
 	
 	private int size = 52;
 	
@@ -24,7 +34,7 @@ public class StandardMapModel implements MapModel {
 	
 	private Rectangle bounds;
 	private Rectangle view = new Rectangle(0, 0, 30, 20);
-	private Point selected = new Point(0, 0);
+	private Point selected = null;
 	
 	public StandardMapModel(int size, MapData data, String name) {
 		this.name = name;
@@ -72,6 +82,15 @@ public class StandardMapModel implements MapModel {
 
 	@Override
 	public void setView(Rectangle rect) {
+		Rectangle oldView = view;
+		view = rect;
+		if (!oldView.equals(rect)) {
+			ViewChangeEvent event = new ViewChangeEvent(this, oldView, rect);
+			for (MapChangeListener l : mapChangeListeners) {
+				l.mapChanged(event);
+			}
+		}
+
 		this.view = rect;
 	}
 
@@ -82,7 +101,14 @@ public class StandardMapModel implements MapModel {
 
 	@Override
 	public void setSelected(Point square) {
-		this.selected = square;
+		Point oldSelected = selected;
+		selected = square;
+		if (oldSelected == null || !oldSelected.equals(square)) {
+			SelectedChangeEvent event = new SelectedChangeEvent(this, oldSelected, square);
+			for (MapChangeListener l : mapChangeListeners) {
+				l.mapChanged(event);
+			}
+		}
 	}
 
 	@Override
@@ -103,6 +129,15 @@ public class StandardMapModel implements MapModel {
 		return data.getSquare(square.x - bounds.x, bounds.y - square.y);
 	}
 
+	private short[] getNewSquare(Point square) {
+		short[] sqr = getSquare(square);
+		if (sqr == null || sqr.length == 0) {
+			sqr = new short[1];
+			setSquare(square, sqr);
+		}
+		return sqr;
+	}
+	
 	@Override
 	public boolean isWithin(Point square) {
 		if (square.x < bounds.x || square.x >= bounds.x + bounds.width) {
@@ -124,40 +159,40 @@ public class StandardMapModel implements MapModel {
 	}
 
 	@Override
-	public UndoableChange setTerrain(Point square, short id) {
-		short[] sqr = getSquare(square);
-		if (sqr == null || sqr.length == 0) {
-			sqr = new short[1];
-			setSquare(square, sqr);
+	public void setTerrain(Point square, Terrain terrain) {
+		short[] sqr = getNewSquare(square);
+		
+		short oldid = Decoder.shortLowByte(sqr[0]);
+		if (oldid == terrain.getId()) {
+			return;
 		}
-		short oldTerrain = Decoder.shortLowByte(sqr[0]);
-		sqr[0] = Decoder.shortFromShorts(sqr[0], id);
+		
+		sqr[0] = Decoder.shortFromShorts(sqr[0], terrain.getId());
 		
 		if (sqr.length == 1 && sqr[0] == 0) {
 			setSquare(square, null);
 		}
-		
-		if (oldTerrain == id) {
-			return null;
-		} else {
-			return new UndoableTerrainChange(this, square, oldTerrain, id);
+
+		TerrainChangeEvent event = new TerrainChangeEvent(this, square, DataStore.getInstance().getTerrain(oldid), terrain);
+		if (parent != null) {
+			parent.recieveMapChangeEvent(event);
+		}
+		for (MapChangeListener l : mapChangeListeners) {
+			l.mapChanged(event);
 		}
 	}
 
 	@Override
-	public UndoableChange toggleFlag(Point square, short id, int state) {
-		short[] sqr = getSquare(square);
-		if (sqr == null || sqr.length == 0) {
-			sqr = new short[1];
-			setSquare(square, sqr);
-		}
+	public void toggleFlag(Point square, Flag flag, int state) {
+		short[] sqr = getNewSquare(square);
+
 		short oldFlags = Decoder.shortHighByte(sqr[0]);
 		if (state > 0) {
-			sqr[0] |= (1 << (id + 8));
+			sqr[0] |= (1 << (flag.getId() + 8));
 		} else if (state < 0) {
-			sqr[0] &= ~(1 << (id + 8));
+			sqr[0] &= ~(1 << (flag.getId() + 8));
 		} else {
-			sqr[0] ^= (1 << (id + 8));
+			sqr[0] ^= (1 << (flag.getId() + 8));
 		}
 
 		if (sqr.length == 1 && sqr[0] == 0) {
@@ -165,31 +200,37 @@ public class StandardMapModel implements MapModel {
 		}
 		
 		if (oldFlags == Decoder.shortHighByte(sqr[0])) {
-			return null;
-		} else {
-			return new UndoableFlagChange(this, square, id, state);
+			return;
+		}
+		
+		FlagChangeEvent event = new FlagChangeEvent(this, square, flag, true); // TODO work out the state
+		if (parent != null) {
+			parent.recieveMapChangeEvent(event);
+		}
+		for (MapChangeListener l : mapChangeListeners) {
+			l.mapChanged(event);
 		}
 	}
 
 	@Override
-	public boolean isFlagged(Point square, short id) {
+	public boolean isFlagged(Point square, Flag flag) {
 		short[] sqr = getSquare(square);
 		if (sqr == null || sqr.length == 0) {
 			return false;
 		}
-		return (sqr[0] & (1 << (id + 8))) > 0;
+		return (sqr[0] & (1 << (flag.getId() + 8))) > 0;
 	}
 	
 	@Override
-	public UndoableChange remove(Point square, short id) {
-		if (!contains(square, id)) {
-			return null;
+	public void remove(Point square, Feature feature) {
+		if (!contains(square, feature)) {
+			return;
 		}
 		short[] sqr = getSquare(square);
 		short[] newSqr = new short[sqr.length-1];
 		int j = 0;
 		for (int i = 0; i < sqr.length; i++) {
-			if (sqr[i] != id) {
+			if (sqr[i] != feature.getId()) {
 				newSqr[j++] = sqr[i];
 			}
 		}
@@ -198,13 +239,19 @@ public class StandardMapModel implements MapModel {
 		} else {
 			setSquare(square, newSqr);
 		}
-		return new UndoableFeatureChange(this, square, id, false);
+		FeatureChangeEvent event = new FeatureChangeEvent(this, square, feature, false);
+		if (parent != null) {
+			parent.recieveMapChangeEvent(event);
+		}
+		for (MapChangeListener l : mapChangeListeners) {
+			l.mapChanged(event);
+		}
 	}
 
 	@Override
-	public UndoableChange add(Point square, short id) {
-		if (contains(square, id)) {
-			return null;
+	public void add(Point square, Feature feature) {
+		if (contains(square, feature)) {
+			return;
 		}
 		short[] sqr = getSquare(square);
 		if (sqr == null) {
@@ -216,19 +263,34 @@ public class StandardMapModel implements MapModel {
 		for (; i < sqr.length; i++) {
 			newSqr[i] = sqr[i];
 		}
-		newSqr[i] = id;
+		newSqr[i] = feature.getId();
 		setSquare(square, newSqr);
-		return new UndoableFeatureChange(this, square, id, true);
+		
+		FeatureChangeEvent event = new FeatureChangeEvent(this, square, feature, true);
+		if (parent != null) {
+			parent.recieveMapChangeEvent(event);
+		}
+		for (MapChangeListener l : mapChangeListeners) {
+			l.mapChanged(event);
+		}
 	}
 	
 	@Override
-	public boolean contains(Point square, short id) {
+	public boolean contains(Point square, Feature feature) {
 		short[] sqr = getSquare(square);
 		if (sqr == null || sqr.length == 0) {
 			return false;
 		}
-		for (int i = 0; i < sqr.length; i++) {
-			if (sqr[i] == id) {
+		
+		if (feature instanceof Terrain) {
+			return feature.getId() == Decoder.shortLowByte(sqr[0]);
+		}
+
+		if (feature instanceof Flag) {
+			return isFlagged(square, (Flag)feature);
+		}
+		for (int i = 1; i < sqr.length; i++) {
+			if (sqr[i] == feature.getId()) {
 				return true;
 			}
 		}
@@ -236,25 +298,40 @@ public class StandardMapModel implements MapModel {
 	}
 
 	@Override
-	public UndoableChange setSquareNote(Point square, String note) {
+	public void setSquareNote(Point square, String note) {
 		String oldNote = data.getSquareNotes(square.x - bounds.x, bounds.y - square.y);
+		if ((oldNote == null && note == null) || (oldNote != null && oldNote.equals(note))) {
+			return;
+		}
+		
 		data.setSquareNotes(square.x - bounds.x, bounds.y - square.y, note);
-		if (oldNote != null && oldNote.equals(note)) {
-			return null;
-		} else {
-			return new UndoableNoteChange(this, square, oldNote, note);
+		
+		NoteChangeEvent event = new NoteChangeEvent(this, square, oldNote, note);
+		if (parent != null) {
+			parent.recieveMapChangeEvent(event);
+		}
+		for (MapChangeListener l : mapChangeListeners) {
+			l.mapChanged(event);
 		}
 	}
 
 	@Override
-	public UndoableChange setCurrentCoOrdinates(Coordinate coord) {
+	public void setCurrentCoOrdinates(Coordinate coord) {
 		Coordinate oldCoord = this.currentCoord;
+		if ((oldCoord == null && coord == null) || (oldCoord != null && oldCoord.equals(coord))) {
+			return;
+		}
 		this.currentCoord = coord;
-		updateOffset();
-		if (oldCoord != null && oldCoord.equals(coord)) {
-			return null;
-		} else {
-			return new UndoableCoordChange(this, oldCoord, coord, true);
+		if (oldCoord != null && !oldCoord.getOffset().equals(new Point(0,0))) {
+			updateOffset();
+		}
+
+		CoordinateChangeEvent event = new CoordinateChangeEvent(this, oldCoord, coord, false);
+		if (parent != null) {
+			parent.recieveMapChangeEvent(event);
+		}
+		for (MapChangeListener l : mapChangeListeners) {
+			l.mapChanged(event);
 		}
 	}
 
@@ -264,15 +341,22 @@ public class StandardMapModel implements MapModel {
 	}
 	
 	@Override
-	public UndoableChange setDefaultCoOrdinates(Coordinate coord) {
+	public void setDefaultCoOrdinates(Coordinate coord) {
 		Coordinate oldCoord = this.defaultCoord;
+		if ((oldCoord == null && coord == null) || (oldCoord != null && oldCoord.equals(coord))) {
+			return;
+		}
 		this.defaultCoord = coord;
-		data.setOffset(coord.getOffset().x, coord.getOffset().y, coord.getName());
-		updateOffset();
-		if (oldCoord != null && oldCoord.equals(coord)) {
-			return null;
-		} else {
-			return new UndoableCoordChange(this, oldCoord, coord, false);
+		if (oldCoord != null && !oldCoord.getOffset().equals(new Point(0,0))) {
+			updateOffset();
+		}
+
+		CoordinateChangeEvent event = new CoordinateChangeEvent(this, oldCoord, coord, true);
+		if (parent != null) {
+			parent.recieveMapChangeEvent(event);
+		}
+		for (MapChangeListener l : mapChangeListeners) {
+			l.mapChanged(event);
 		}
 	}
 
@@ -281,6 +365,7 @@ public class StandardMapModel implements MapModel {
 		return defaultCoord;
 	}
 
+	@Override
 	public Point getOffset() {
 		return offset;
 	}
@@ -293,154 +378,22 @@ public class StandardMapModel implements MapModel {
 		}
 	}
 	
+	@Override
 	public boolean isDirty() {
 		return data.isDirty();
 	}
-	
-	public int getExtra(Point square, short id) {
-		return 0;
+
+	@Override
+	public void setParent(MapModel model) {
+		this.parent = model;
 	}
-	
+
+	@Override
+	public MapModel getParent() {
+		return parent;
+	}
+
 	public String toString() {
 		return "Standard " + bounds.x + ", " + bounds.y + " " + bounds.width + "x" + bounds.height;
 	}
-	
-	public class UndoableTerrainChange extends UndoableMapChange {
-		
-		private short oldTerrain;
-		private short newTerrain;
-		
-		public UndoableTerrainChange(MapModel model, Point pos, short oldTerrain, short newTerrain) {
-			super(model, pos);
-			this.oldTerrain = oldTerrain;
-			this.newTerrain = newTerrain;
-		}
-		
-		public void undo() throws CannotUndoException {
-			super.undo();
-			model.setTerrain(pos, oldTerrain);
-		}
-
-		@Override
-		public void redo() throws CannotRedoException {
-			super.redo();
-			model.setTerrain(pos, newTerrain);
-		}
-		
-	}
-	
-	public class UndoableFeatureChange extends UndoableMapChange {
-
-		private short id;
-		private boolean added;
-		
-		public UndoableFeatureChange(MapModel model, Point pos, short id, boolean added) {
-			super(model, pos);
-			this.id = id;
-			this.added = added;
-		}
-
-		@Override
-		public void redo() throws CannotRedoException {
-			super.redo();
-			if (added) {
-				model.add(pos, id);
-			} else {
-				model.remove(pos, id);
-			}
-		}
-
-		@Override
-		public void undo() throws CannotUndoException {
-			super.undo();
-			if (added) {
-				model.remove(pos, id);
-			} else {
-				model.add(pos, id);
-			}
-		}
-	}
-	
-	public class UndoableNoteChange extends UndoableMapChange {
-
-		private String oldNote;
-		private String newNote;
-		
-		public UndoableNoteChange(MapModel model, Point pos, String oldNote, String newNote) {
-			super(model, pos);
-			this.oldNote = oldNote;
-			this.newNote = newNote;
-		}
-
-		@Override
-		public void redo() throws CannotRedoException {
-			super.redo();
-			model.setSquareNote(pos, newNote);
-		}
-
-		@Override
-		public void undo() throws CannotUndoException {
-			super.undo();
-			model.setSquareNote(pos, oldNote);
-		}
-	}
-	
-	public class UndoableCoordChange extends UndoableMapChange {
-
-		private Coordinate oldCoord;
-		private Coordinate newCoord;
-		private boolean current;
-		
-		public UndoableCoordChange(MapModel model, Coordinate oldCoord, Coordinate newCoord, boolean current) {
-			super(model, null);
-			this.oldCoord = oldCoord;
-			this.newCoord = newCoord;
-			this.current = current;
-		}
-
-		@Override
-		public void redo() throws CannotRedoException {
-			super.redo();
-			if (current) {
-				model.setCurrentCoOrdinates(newCoord);
-			} else {
-				model.setDefaultCoOrdinates(newCoord);
-			}
-		}
-
-		@Override
-		public void undo() throws CannotUndoException {
-			super.undo();
-			if (current) {
-				model.setCurrentCoOrdinates(oldCoord);
-			} else {
-				model.setDefaultCoOrdinates(oldCoord);
-			}
-		}
-	}
-
-	public class UndoableFlagChange extends UndoableMapChange {
-
-		private short id;
-		private int state;
-		
-		public UndoableFlagChange(MapModel model, Point pos, short id, int state) {
-			super(model, pos);
-			this.id = id;
-			this.state = state;
-		}
-
-		@Override
-		public void redo() throws CannotRedoException {
-			super.redo();
-			model.toggleFlag(pos, id, state);
-		}
-
-		@Override
-		public void undo() throws CannotUndoException {
-			super.undo();
-			model.toggleFlag(pos, id, -state);
-		}
-	}
-
 }

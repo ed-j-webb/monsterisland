@@ -28,12 +28,12 @@ public class FeatureDecorator implements Decorator {
 		int ox = 0;
 		int oy = 0;
 		for(int i = 1; i < square.length; i++) {
-			Feature f = DataStore.getInstance().getFeatureById(square[i]);
-			if (f != null) {
-				int extra = model.getExtra(sqr, f.getId());
+			Feature feature = DataStore.getInstance().getFeatureById(square[i]);
+			if (feature != null) {
+				int extra = model.getExtra(sqr, feature);
 				if (ox < size && oy < size) {
-					if (f instanceof Location) {
-						drawLocation(g2d, f, t, px + ox, py + oy, model, search, extra);
+					if (feature instanceof Location) {
+						drawLocation(g2d, feature, t, px + ox, py + oy, model, search, extra);
 						if (ox + 52 <= size) {
 							ox += 26;
 						} else {
@@ -45,10 +45,10 @@ public class FeatureDecorator implements Decorator {
 								oy = size;
 							}
 						}
-					} else if (f instanceof Terrain) {
+					} else if (feature instanceof Terrain) {
 						// Ignore terrain
 					} else {
-						drawOther(g2d, f, t, px + ox, py + oy, model, search, extra);
+						drawOther(g2d, feature, t, px + ox, py + oy, model, search, extra);
 						if (oy % 2 == 0) {
 							oy += 13;
 						} else if (ox + 52 <= size) {
@@ -67,8 +67,8 @@ public class FeatureDecorator implements Decorator {
 				}
 			} else {
 				// It may be a terrain with flags
-				f = DataStore.getInstance().getFeatureById(Decoder.shortLowByte(square[i]));
-				if (f == null) {
+				feature = DataStore.getInstance().getFeatureById(Decoder.shortLowByte(square[i]));
+				if (feature == null) {
 					System.out.println(square[i] + " (" + Decoder.stringFromShort(square[i]) + ") is not valid");
 				}
 			}

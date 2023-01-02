@@ -9,17 +9,19 @@ import java.awt.image.BufferedImage;
 import java.util.Iterator;
 
 import javax.swing.JPanel;
-import javax.swing.undo.CannotRedoException;
-import javax.swing.undo.CannotUndoException;
 
-import net.edwebb.jim.data.MapIndex;
+import net.edwebb.jim.model.MapIndex;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
-import net.edwebb.jim.model.UndoableChange;
+import net.edwebb.jim.model.events.MapChangeEvent;
+import net.edwebb.jim.model.events.MapChangeListener;
+import net.edwebb.jim.model.events.TerrainChangeEvent;
+import net.edwebb.jim.model.events.ViewChangeEvent;
+import net.edwebb.jim.model.events.MapChangeEvent.MAP_CHANGE_TYPE;
 import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Terrain;
 
-public class MiniMap extends JPanel {
+public class MiniMap extends JPanel implements MapChangeListener {
 
 	/**
 	 * 
@@ -40,7 +42,12 @@ public class MiniMap extends JPanel {
 	}
 	
 	public void setModel(MapModel model) {
+		if (this.model != null) {
+			this.model.removeMapChangeListener(this);
+		}
 		this.model = model;
+		model.addMapChangeListener(this);
+		
 		this.search = null;
 		Rectangle bounds = model.getBounds();
 		if (img != null) {
@@ -67,6 +74,24 @@ public class MiniMap extends JPanel {
 		this.setPreferredSize(dim);
 	}
 	
+	@Override
+	public void mapChanged(MapChangeEvent event) {
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.VIEW)) {
+			ViewChangeEvent viewEvent = (ViewChangeEvent)event;
+			if (viewEvent.getNewView() != null) {
+				repaint();
+			}
+			return;
+		}
+		
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.TERRAIN)) {
+			TerrainChangeEvent terrainEvent = (TerrainChangeEvent)event;
+			setPoint(terrainEvent.getSquare(), terrainEvent.getNewTerrain());
+			repaint();
+		}
+		
+	}
+
 	public void setSearch(MapSearch search) {
 		this.search = search;
 	}
@@ -75,16 +100,7 @@ public class MiniMap extends JPanel {
 		this.index = index;
 	}
 	
-	public UndoableChange setPoint(Point p, Terrain t) {
-		
-		short[] square = model.getSquare(p);
-		Color oldColor = null;
-		if (square == null || square.length == 0) {
-			oldColor = Color.BLACK;
-		} else {
-			oldColor = DataStore.getInstance().getTerrain(square[0]).getColour();
-		}
-		
+	private void setPoint(Point p, Terrain t) {
 		Rectangle bounds = model.getBounds();
 		Graphics g = img.getGraphics();
 		if (t == null) {
@@ -93,12 +109,6 @@ public class MiniMap extends JPanel {
 			g.setColor(t.getColour());
 		}
 		g.drawLine(p.x - bounds.x, bounds.y - p.y, p.x - bounds.x, bounds.y - p.y);
-
-		if (t == null) {
-			return new UndoableMiniMapChange(p, oldColor, Color.BLACK);
-		} else {
-			return new UndoableMiniMapChange(p, oldColor, t.getColour());
-		}
 	}
 	
 	@Override
@@ -133,38 +143,5 @@ public class MiniMap extends JPanel {
         Rectangle view = model.getView();
         g.drawRect(view.x - bounds.x, bounds.y - view.y, view.width, view.height);
 	
-	}
-	
-	public class UndoableMiniMapChange extends UndoableChange {
-		private Point pos;
-		private Color oldColour; 
-		private Color newColour;
-		
-		public UndoableMiniMapChange(Point pos, Color oldColour, Color newColour) {
-			super();
-			this.pos = pos;
-			this.oldColour = oldColour;
-			this.newColour = newColour;
-		}
-
-		@Override
-		public void undo() throws CannotUndoException {
-			super.undo();
-			Rectangle bounds = model.getBounds();
-			Graphics g = img.getGraphics();
-			g.setColor(oldColour);
-			g.drawLine(pos.x - bounds.x, bounds.y - pos.y, pos.x - bounds.x, bounds.y - pos.y);
-		}
-		
-		@Override
-		public void redo() throws CannotRedoException {
-			super.redo();
-			Rectangle bounds = model.getBounds();
-			Graphics g = img.getGraphics();
-			g.setColor(newColour);
-			g.drawLine(pos.x - bounds.x, bounds.y - pos.y, pos.x - bounds.x, bounds.y - pos.y);
-		}
-
-		
 	}
 }

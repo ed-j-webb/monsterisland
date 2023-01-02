@@ -44,7 +44,7 @@ public class Coordinate {
 
 	@Override
 	public String toString() {
-		return name + "(" + offset.y + ", " + offset.x + ")";
+		return name + " (" + offset.y + ", " + offset.x + ")";
 	}
 
 	/**

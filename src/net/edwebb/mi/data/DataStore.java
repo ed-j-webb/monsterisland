@@ -66,8 +66,9 @@ public class DataStore {
 		return instance;
 	}
 	
-	public static void createInstance(File dataDir) throws IOException {
+	public static DataStore createInstance(File dataDir) throws IOException {
 		instance = new DataStore(dataDir);
+		return instance;
 	}
 	
 	private DataStore(File dataDir) throws IOException {
@@ -661,6 +662,51 @@ public class DataStore {
 			}
 		} finally {
 			reader.close();
+		}
+	}
+	
+	private static void getBytes(Feature f) {
+		byte low = (byte)(f.getId() & 0xff);
+		byte high = (byte)((f.getId() >> 8) & 0xff);
+		System.out.print(Integer.toBinaryString((high & 0xFF) + 0x100).substring(1));
+		System.out.print(" ");
+		System.out.print(Integer.toBinaryString((low & 0xFF) + 0x100).substring(1));
+		System.out.println(" " + f.getCode() + " " + f.getName());
+	}
+	
+	private static void getBytes(Terrain t, byte high) {
+		byte low = (byte)(t.getId() & 0xff);
+		System.out.print(Integer.toBinaryString((high & 0xFF) + 0x100).substring(1));
+		System.out.print(" ");
+		System.out.print(Integer.toBinaryString((low & 0xFF) + 0x100).substring(1));
+		System.out.println(" " + t.getCode() + " " + high);
+	}
+
+	public static void main(String[] args) throws IOException {
+		DataStore store = DataStore.createInstance(new File("data"));
+		System.out.println("Terrain");
+		for (Terrain t : store.getTerrain()) {
+			getBytes(t);
+		}
+		for (Terrain t : store.getTerrain()) {
+			for (byte b = 0; b < 63; b++)
+			getBytes(t, b);
+		}
+		System.out.println("Plants");
+		for (Plant p : store.getPlants()) {
+			getBytes(p);
+		}
+		System.out.println("Locations");
+		for (Location l : store.getLocations()) {
+			getBytes(l);
+		}
+		System.out.println("Creatures");
+		for (Creature c : store.getCreatures()) {
+			getBytes(c);
+		}
+		System.out.println("Flags");
+		for (Flag f : store.getFlags()) {
+			getBytes(f);
 		}
 	}
 	

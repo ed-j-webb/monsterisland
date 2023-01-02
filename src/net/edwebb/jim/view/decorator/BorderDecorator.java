@@ -19,7 +19,7 @@ public class BorderDecorator implements Decorator {
 			g2d.setColor(Color.RED);
 			g2d.drawRect(px - 1, py - 1, model.getSize() + 1, model.getSize() + 1);
 		}
-		int extra = model.getExtra(sqr, Short.MIN_VALUE);
+		int extra = model.getExtra(sqr);
 		if (extra != 0) {
 			g2d.setColor(colours[extra]);
 			g2d.drawRect(px, py, model.getSize() - 1, model.getSize() - 1);

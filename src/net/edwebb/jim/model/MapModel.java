@@ -3,8 +3,12 @@ package net.edwebb.jim.model;
 import java.awt.Point;
 import java.awt.Rectangle;
 
-import net.edwebb.jim.data.MapData;
+import net.edwebb.jim.model.events.MapChangeEvent;
+import net.edwebb.jim.model.events.MapChangeListener;
 import net.edwebb.mi.data.Coordinate;
+import net.edwebb.mi.data.Feature;
+import net.edwebb.mi.data.Flag;
+import net.edwebb.mi.data.Terrain;
 
 public interface MapModel {
 
@@ -39,26 +43,36 @@ public interface MapModel {
 	public String getSquareNote(Point square);
 	public boolean isWithin(Point square);
 	
-	public UndoableChange setSquareNote(Point square, String note);
+	public void setSquareNote(Point square, String note);
 	
-	public UndoableChange setTerrain(Point square, short id);
+	public void setTerrain(Point square, Terrain terrain);
 	
-	public UndoableChange toggleFlag(Point square, short id, int state);
-	public boolean isFlagged(Point square, short id);
+	public void toggleFlag(Point square, Flag flag, int state);
+	public boolean isFlagged(Point square, Flag id);
 	
-	public UndoableChange remove(Point square, short id);
-	public UndoableChange add(Point square, short id);
-	public boolean contains(Point square, short id);
+	public void remove(Point square, Feature feature);
+	public void add(Point square, Feature id);
+	public boolean contains(Point square, Feature id);
 
-	public UndoableChange setDefaultCoOrdinates(Coordinate coord);
+	public void setDefaultCoOrdinates(Coordinate coord);
 	public Coordinate getDefaultCoOrdinates();
 	
-	public UndoableChange setCurrentCoOrdinates(Coordinate coord);
+	public void setCurrentCoOrdinates(Coordinate coord);
 	public Coordinate getCurrentCoOrdinates();
 	
 	public Point getOffset();
 	
 	public boolean isDirty();
 	
-	public int getExtra(Point square, short id);
+	public int getExtra(Point square, Feature feature);
+	public int getExtra(Point square, Flag flag);
+	public int getExtra(Point square);
+	
+	public void addMapChangeListener(MapChangeListener l);
+	
+	public void removeMapChangeListener(MapChangeListener l);
+
+	public void setParent(MapModel model);
+	public MapModel getParent();
+	public void recieveMapChangeEvent(MapChangeEvent event);
 }

@@ -3,6 +3,7 @@ package net.edwebb.jim.control;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -102,6 +103,8 @@ public class MapFind extends JDialog {
 		this.setLayout(new BorderLayout());
 		this.add(getPanInput(), BorderLayout.CENTER);
 		this.add(getPanControl(), BorderLayout.SOUTH);
+		Point point = new Point(parent.getLocation().x + 40, parent.getLocation().y + 40);
+		this.setLocation(point);
 	}
 	
 	/**

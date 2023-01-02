@@ -22,53 +22,47 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringReader;
-import java.net.URL;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
 import javax.swing.border.BevelBorder;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.undo.UndoManager;
-import javax.swing.undo.UndoableEdit;
 
-import net.edwebb.jim.data.MapData;
-import net.edwebb.jim.data.MapIndex;
+import net.edwebb.jim.control.actions.CompareAction;
+import net.edwebb.jim.control.actions.CoordAction;
+import net.edwebb.jim.control.actions.FindAction;
+import net.edwebb.jim.control.actions.FlagAction;
+import net.edwebb.jim.control.actions.NewAction;
+import net.edwebb.jim.control.actions.OpenAction;
+import net.edwebb.jim.control.actions.RedoAction;
+import net.edwebb.jim.control.actions.SaveAction;
+import net.edwebb.jim.control.actions.SaveDifferencesAction;
+import net.edwebb.jim.control.actions.SaveMergedAction;
+import net.edwebb.jim.control.actions.ScryeAction;
+import net.edwebb.jim.control.actions.TranslateAction;
+import net.edwebb.jim.control.actions.UndoAction;
+import net.edwebb.jim.control.actions.ExtractAction;
 //import net.edwebb.jim.factory.Diff;
 import net.edwebb.jim.factory.FactoryManager;
 //import net.edwebb.jim.factory.Merge;
 import net.edwebb.jim.model.DiffMapModel;
+import net.edwebb.jim.model.MapData;
+import net.edwebb.jim.model.MapIndex;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
 import net.edwebb.jim.model.StandardMapModel;
-import net.edwebb.jim.model.UndoableChange;
-import net.edwebb.jim.model.UndoableCombinedChange;
-import net.edwebb.jim.model.UndoableMapChange;
 import net.edwebb.jim.view.EditPanel;
 import net.edwebb.jim.view.MiniMap;
 import net.edwebb.jim.view.ViewPanel;
@@ -77,13 +71,6 @@ import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Feature;
 import net.edwebb.mi.data.Flag;
 import net.edwebb.mi.data.Terrain;
-import net.edwebb.mi.extract.MIExtractor;
-import net.edwebb.mi.extract.Sighting;
-import net.edwebb.mi.extract.Stats;
-import net.edwebb.mi.extract.Turn;
-import net.edwebb.mi.pdf.PDFExtractor;
-import net.edwebb.mi.reader.TurnDigester;
-import net.edwebb.mi.reader.TurnReader;
 
 /**
  * The controller of the application. Every change comes through this class. It is responsible for responding to Events raised by the
@@ -102,14 +89,6 @@ public class MapController {
 	// The frame of the application
 	private JFrame frame;
 
-	// The file chooser used by Open, Save and Translate actions
-	private JFileChooser save = null;
-	private JFileChooser load = null;
-	private JFileChooser trans = null;
-	private JFileChooser dir = null;
-	private JFileChooser csv = null;
-	private JFileChooser extract = null;
-	
 	// The panel that contains the main map display components
 	private ViewPanel panView;
 		private MouseAdapter selectSquare;
@@ -131,7 +110,6 @@ public class MapController {
 		private NewAction newAction;
 		private OpenAction openAction;
 		private SaveAction saveAction;
-		private TranslateAction translateAction;
 		private FindAction findAction;
 		private UndoAction undoAction;
 		private RedoAction redoAction;
@@ -146,6 +124,7 @@ public class MapController {
 		private JToggleButton cmdFlag;
 		private ScryeAction scryeAction;
 		private ExtractAction extractAction;
+		private TranslateAction translateAction;
 	
 	// The status bar	
 	private JPanel panStatus;
@@ -163,22 +142,6 @@ public class MapController {
 	
 	// The class that handles undo/redo
 	private ChangeUndoManager undoManager;
-	
-	// Flag to show if the controller is in the process of updating the view
-	private boolean updating;
-	
-	// The new map dimensions dialog box
-	private MapDimensions frmDimensions;
-	
-	// The find dialog box
-	private MapFind frmFind;
-	
-	// The text dialog box
-	private MapText frmText;
-	
-	// The long text dialog box
-	private JTextArea txtNote;
-	private JScrollPane scrNote;
 	
 	/**
 	 *  Creates a new MapController with an empty 100x100 map.
@@ -203,7 +166,7 @@ public class MapController {
 		this.model = model;
 		setSearch(null);
 		buildIndex(model);
-		undoManager = new ChangeUndoManager();
+		getUndoManager().discardAllEdits();
 		setMapLabel(model);
 		getView().setModel(model);
 		getEdit().setModel(model);
@@ -212,7 +175,6 @@ public class MapController {
 		getCmbCoords().setSelectedItem(model.getCurrentCoOrdinates());
 		if (getFrame().isVisible()) {
 			resize(getView().getDimension());
-			refresh();
 		}
 		if (model instanceof DiffMapModel) {
 			getSaveDifferencesAction().setEnabled(true);
@@ -223,9 +185,10 @@ public class MapController {
 			getSaveMergedAction().setEnabled(false);
 			getCompareAction().setEnabled(true);
 		}
+		model.setSelected(new Point(0, 0));
 	}
 
-	private void setMapLabel(MapModel model) {
+	public void setMapLabel(MapModel model) {
 		StringBuilder sb = new StringBuilder(100);
 		sb.append(model.getName());
 		sb.append("  |  ");
@@ -247,6 +210,10 @@ public class MapController {
 		getMapLabel().setText(sb.toString());
 	}
 	
+	public void setStatusLabel(String text) {
+		getStatusLabel().setText(text);
+	}
+	
 	/**
 	 * Adds the model's coOrdinate system to the combobox if it is not already present
 	 * 
@@ -254,7 +221,7 @@ public class MapController {
 	 * @param model the map model
 	 */
 	private void addCoOrdinates(JComboBox<Coordinate> cmbBox, MapModel model) {
-		if (model.getDefaultCoOrdinates() == null) {
+		if (model.getDefaultCoOrdinates() == null || model.getDefaultCoOrdinates().getOffset().equals(new Point(0,0))) {
 			return;
 		}
 		for (int i = 0; i < cmbBox.getItemCount(); i++) {
@@ -302,6 +269,13 @@ public class MapController {
 		return search;
 	}
 	
+	public ChangeUndoManager getUndoManager() {
+		if (undoManager == null) {
+			undoManager = new ChangeUndoManager();
+		}
+		return undoManager;
+	}
+	
 	/**
 	 * Sets a new search for the controller to use. 
 	 * @param search the search that the controller should use
@@ -310,15 +284,24 @@ public class MapController {
 		this.search = search;
 		getView().setSearch(search);
 		getMiniMap().setSearch(search);
+		updateSearch();
 	}
 	
+	/**
+	 * Sets a new search for the controller to use. 
+	 * @param search the search that the controller should use
+	 */
+	public void updateSearch() {
+		getView().repaint();
+		getMiniMap().repaint();
+	}
+
 	/**
 	 * Sets a new index for the controller to use
 	 * @param model the model to build the index from 
 	 */
 	public void buildIndex(MapModel model) {
-		index = new MapIndex();
-		index.index(model);
+		index = new MapIndex(model);
 		getMiniMap().setIndex(index);
 	}
 	
@@ -377,7 +360,6 @@ public class MapController {
 						rect = new Rectangle(rect.x, -e.getValue(), rect.width, rect.height);
 					}
 					getModel().setView(bound(rect));
-					refresh();
 				}
 			};
 		}
@@ -395,7 +377,6 @@ public class MapController {
 				@Override
 				public void componentResized(ComponentEvent e) {
 					resize(getView().getDimension());
-					refresh();
 				}
 
 			};
@@ -433,14 +414,9 @@ public class MapController {
 						rect = new Rectangle(rect.x, rect.y + 1, rect.width, rect.height);
 						sel = new Point(sel.x, sel.y + 1);
 						scroll = true;
-					} else {
-						// Update the terrain
-						Terrain t = DataStore.getInstance().getTerrain((short)e.getKeyCode());
-						if (t != null) {
-							handleFeatureEdit(getModel().getSelected(), EditPanel.ADD, t);
-						}
+					} else if (e.getKeyCode() >= KeyEvent.VK_0 && e.getKeyCode() <= KeyEvent.VK_7) {
 						// Flag the square
-						Flag f = net.edwebb.mi.data.DataStore.getInstance().getFlag((short)(e.getKeyCode() - 48));
+						Flag f = DataStore.getInstance().getFlag((short)(e.getKeyCode() - 48));
 						if (f != null) {
 							if (e.isShiftDown()) {
 								handleFlagEdit(getModel().getSelected(), f);
@@ -450,12 +426,17 @@ public class MapController {
 								paintFlag(getModel().getSelected(), f, true);
 							}
 						}
+					} else {
+						// Update the terrain
+						Terrain t = DataStore.getInstance().getTerrain((short)e.getKeyCode());
+						if (t != null) {
+							handleFeatureEdit(getModel().getSelected(), EditPanel.ADD, t);
+						}
 					}
 					if (scroll == true) {
 						getModel().setView(bound(rect));
 						getModel().setSelected(bound(sel));
 					}
-					refresh();
 				}
 			};
 		}
@@ -463,7 +444,6 @@ public class MapController {
 	}
 
 	private void paintFlag(Point p, Flag f, boolean on) {
-		UndoableCombinedChange change = new UndoableCombinedChange("(" + p.y + "," + p.x + ") " + (on ? "Add " : "Remove ") + " " + f.getName() + " flag");
 		Point s = new Point(p);
 		Point r = new Point(s); 
 		for (short x = (short)(p.x - f.getRange() + 1); x < p.x + f.getRange(); x++) {
@@ -472,12 +452,9 @@ public class MapController {
 				r = bound(s);
 				// Only set the flag if s and t are the same (i.e. s is not off the edge of the map)
 				if (s.equals(r)) {
-					change.addChange(getModel().toggleFlag(s, f.getId(), on ? MapModel.ON : MapModel.OFF));
+					getModel().toggleFlag(s, f, on ? MapModel.ON : MapModel.OFF);
 				}
 			}
-		}
-		if (change.hasChanges()) {
-			undoManager.addEdit(change);
 		}
 	}
 	
@@ -496,7 +473,6 @@ public class MapController {
 					e.getComponent().requestFocusInWindow();
 					getModel().setView(bound(rect));
 					getModel().setSelected(bound(p));
-					refresh();
 				}
 
 				@Override
@@ -546,7 +522,7 @@ public class MapController {
 					String action = (String)comp.getClientProperty(EditPanel.ACTION);
 					if (f != null) {
 						if (action.equals(EditPanel.FLAG)) {
-							handleFlagEdit(pos, f);
+							handleFlagEdit(pos, (Flag)f);
 						} else {
 							handleFeatureEdit(pos, action, f);
 						}
@@ -574,14 +550,13 @@ public class MapController {
 				
 				@Override
 				public void itemStateChanged(ItemEvent e) {
-					if (!updating && e.getStateChange() == ItemEvent.SELECTED) {
+					if (e.getStateChange() == ItemEvent.SELECTED) {
 						Point pos = getModel().getSelected();
 						Terrain t = (Terrain)e.getItem();
 						if (pos == null || t == null) {
 							return;
 						}
 						handleFeatureEdit(pos, EditPanel.ADD, t);
-						refresh();
 					}
 				}
 			};
@@ -595,15 +570,7 @@ public class MapController {
 	 * @param note the new notes
 	 */
 	private void handleNoteEdit(Point pos, String note) {
-		UndoableCombinedChange change = new UndoableCombinedChange(" (" + pos.y + "," + pos.x + ") add note '" + note + "'");
-
-		change.addChange(getIndex().removeNote(getModel().getSquareNote(pos), pos));
-		change.addChange(getModel().setSquareNote(pos, note));
-		change.addChange(getIndex().addNote(note, pos));
-		if (change.hasChanges()) {
-			undoManager.addEdit(change);
-		}
-		refresh();
+		getModel().setSquareNote(pos, note);
 	}
 	
 	/**
@@ -612,65 +579,30 @@ public class MapController {
 	 * @param action the action to take. This is one of the EditPanel constants ADD or DELETE
 	 * @param f the feature to add or delete
 	 */
-	private UndoableCombinedChange handleFeatureEdit(Point pos, String action, Feature f) {
-		UndoableCombinedChange change = null;
-		getIndex().removeExtra(getModel().getExtra(pos, Short.MIN_VALUE), pos);
+	private void handleFeatureEdit(Point pos, String action, Feature f) {
 		if (action.equals(EditPanel.ADD)) {
 			if (f instanceof Terrain) {
-				change = new UndoableCombinedChange(" (" + pos.y + "," + pos.x + ") change terrain to " + f.getName());
-				// Poor design the miniMap change MUST go before mapModel change
-				change.addChange(getMiniMap().setPoint(pos, (Terrain)f));
-				change.addChange(getModel().setTerrain(pos, f.getId()));
+				getModel().setTerrain(pos, (Terrain)f);
 			} else {
-				change = new UndoableCombinedChange("(" + pos.y + "," + pos.x + ") add " + f.getName());
-				change.addChange(getModel().add(pos, f.getId()));
-				change.addChange(getIndex().addPoint(f, pos));
+				getModel().add(pos, f);
 			}
 		} else if (action.equals(EditPanel.DELETE)) {
-			change = new UndoableCombinedChange("(" + pos.y + "," + pos.x + ") remove " + f.getName());
-			change.addChange(getModel().remove(pos, f.getId()));
-			change.addChange(getIndex().removePoint(f, pos));
-		}
-		getIndex().addExtra(getModel().getExtra(pos, Short.MIN_VALUE), pos);
-
-		if (change.hasChanges()) {
-			undoManager.addEdit(change);
-		}
-		refresh();
-		if (change.hasChanges()) {
-			return change;
-		} else {
-			return null;
+			getModel().remove(pos, f);
 		}
 	}
 	
-	private void handleFlagEdit(Point pos, Feature f) {
-		getIndex().removeExtra(getModel().getExtra(pos, Short.MIN_VALUE), pos);
-		UndoableChange change = getModel().toggleFlag(pos, f.getId(), MapModel.INVERSE);
-		if (change != null) {
-			change.setPresentationName("(" + pos.y + "," + pos.x + ") toggle " + f.getName() + " flag");
-			undoManager.addEdit(change);
-		}
-		getIndex().addExtra(getModel().getExtra(pos, Short.MIN_VALUE), pos);
-		refresh();
+	private void handleFlagEdit(Point pos, Flag f) {
+		getModel().toggleFlag(pos, f, MapModel.INVERSE);
 	}
 	
 	private void mergeFlags(Point pos) {
-		UndoableCombinedChange change = new UndoableCombinedChange("(" + pos.y + "," + pos.x + ") " );
-		getIndex().removeExtra(getModel().getExtra(pos, Short.MIN_VALUE), pos);
 		Iterator<Flag> it = DataStore.getInstance().getFlags().iterator();
 		while (it.hasNext()) {
 			Flag f = it.next();
-			if (getModel().isFlagged(pos, f.getId())) {
-				change.addChange(getModel().toggleFlag(pos, f.getId(), MapModel.ON));
+			if (getModel().isFlagged(pos, f)) {
+				getModel().toggleFlag(pos, f, MapModel.ON);
 			}
 		}
-		if (change != null) {
-			change.setPresentationName("(" + pos.y + "," + pos.x + ") merge flags (not really sure what this does!)");
-			undoManager.addEdit(change);
-		}
-		getIndex().addExtra(getModel().getExtra(pos, Short.MIN_VALUE), pos);
-		refresh();
 	}
 	
 	/**
@@ -701,7 +633,6 @@ public class MapController {
 					p.translate(-view.width / 2 + bounds.x, -view.height/2);
 					p.move(p.x, bounds.y - p.y);
 					getModel().setView(new Rectangle(p.x, p.y, view.width, view.height));
-					refresh();
 				}
 			};
 		}
@@ -719,7 +650,6 @@ public class MapController {
 			toolBar.add(getNewAction());
 			toolBar.add(getOpenAction());
 			toolBar.add(getSaveAction());
-			toolBar.add(getTranslateAction());
 			toolBar.add(new JToolBar.Separator());
 			toolBar.add(getUndoAction());
 			toolBar.add(getRedoAction());
@@ -737,6 +667,7 @@ public class MapController {
 			toolBar.add(getCompareAction());
 			toolBar.add(getSaveDifferencesAction());
 			toolBar.add(getSaveMergedAction());
+			toolBar.add(getTranslateAction());
 			//toolBar.add(getDiffAction());
 			//toolBar.add(getMergeAction());
 			toolBar.add(new JToolBar.Separator());
@@ -750,7 +681,7 @@ public class MapController {
 	 */
 	public NewAction getNewAction() {
 		if (newAction == null) {
-			newAction = new NewAction();
+			newAction = new NewAction(this);
 		}
 		return newAction;
 	}
@@ -761,7 +692,7 @@ public class MapController {
 	 */
 	public OpenAction getOpenAction() {
 		if (openAction == null) {
-			openAction = new OpenAction();
+			openAction = new OpenAction(this);
 		}
 		return openAction;
 	}
@@ -772,7 +703,7 @@ public class MapController {
 	 */
 	public SaveAction getSaveAction() {
 		if (saveAction == null) {
-			saveAction = new SaveAction();
+			saveAction = new SaveAction(this);
 		}
 		return saveAction;
 	}
@@ -783,7 +714,7 @@ public class MapController {
 	 */
 	public TranslateAction getTranslateAction() {
 		if (translateAction == null) {
-			translateAction = new TranslateAction();
+			translateAction = new TranslateAction(this);
 		}
 		return translateAction;
 	}
@@ -794,7 +725,7 @@ public class MapController {
 	 */
 	public UndoAction getUndoAction() {
 		if (undoAction == null) {
-			undoAction = new UndoAction();
+			undoAction = new UndoAction(getUndoManager());
 		}
 		return undoAction;
 	}
@@ -805,7 +736,7 @@ public class MapController {
 	 */
 	public RedoAction getRedoAction() {
 		if (redoAction == null) {
-			redoAction = new RedoAction();
+			redoAction = new RedoAction(getUndoManager());
 		}
 		return redoAction;
 	}
@@ -816,7 +747,7 @@ public class MapController {
 	 */
 	public FindAction getFindAction() {
 		if (findAction == null) {
-			findAction = new FindAction();
+			findAction = new FindAction(this);
 		}
 		return findAction;
 	}
@@ -827,15 +758,15 @@ public class MapController {
 	 */
 	public CoordAction getCoordAction() {
 		if (coordAction == null) {
-			coordAction = new CoordAction();
+			coordAction = new CoordAction(this, this.getCmbCoords());
 		}
 		return coordAction;
 	}
 	
-	/**
-	 * Returns the Diff action
-	 * @return the Diff action
-	 */
+//	/**
+//	 * Returns the Diff action
+//	 * @return the Diff action
+//	 */
 //	public DiffAction getDiffAction() {
 //		if (diffAction == null) {
 //			diffAction = new DiffAction();
@@ -860,25 +791,23 @@ public class MapController {
 	 */
 	public CompareAction getCompareAction() {
 		if (compAction == null) {
-			compAction = new CompareAction();
+			compAction = new CompareAction(this);
 		}
 		return compAction;
 	}
 	
 	public SaveDifferencesAction getSaveDifferencesAction() {
 		if (saveDifferencesAction == null) {
-			saveDifferencesAction = new SaveDifferencesAction();
+			saveDifferencesAction = new SaveDifferencesAction(this);
 		}
 		return saveDifferencesAction;
-
 	}
 	
 	public SaveMergedAction getSaveMergedAction() {
 		if (saveMergedAction == null) {
-			saveMergedAction = new SaveMergedAction();
+			saveMergedAction = new SaveMergedAction(this);
 		}
 		return saveMergedAction;
-
 	}
 	
 	/**
@@ -887,7 +816,7 @@ public class MapController {
 	 */
 	public ScryeAction getScryeAction() {
 		if (scryeAction == null) {
-			scryeAction = new ScryeAction();
+			scryeAction = new ScryeAction(this);
 		}
 		return scryeAction;
 	}
@@ -898,7 +827,7 @@ public class MapController {
 	 */
 	public ExtractAction getExtractAction() {
 		if (extractAction == null) {
-			extractAction = new ExtractAction();
+			extractAction = new ExtractAction(this);
 		}
 		return extractAction;
 	}
@@ -909,7 +838,7 @@ public class MapController {
 	 */
 	private JToggleButton getCmdFlag() {
 		if (cmdFlag == null) {
-			cmdFlag = new JToggleButton(new FlagAction());
+			cmdFlag = new JToggleButton(new FlagAction(this));
 			cmdFlag.setText("");
 			cmdFlag.setSelected(true);
 		}
@@ -964,7 +893,7 @@ public class MapController {
 				public void itemStateChanged(ItemEvent e) {
 					getModel().setSize((Integer)e.getItem());
 					resize(getView().getDimension());
-					refresh();
+					//refresh();
 				}
 			});
 			cmbSize.setRenderer(new DefaultListCellRenderer() {
@@ -1003,7 +932,6 @@ public class MapController {
 				@Override
 				public void itemStateChanged(ItemEvent e) {
 					getModel().setCurrentCoOrdinates((Coordinate)e.getItem());
-					refresh();
 				}
 			});
 			cmbCoords.setRenderer(new DefaultListCellRenderer() {
@@ -1027,44 +955,6 @@ public class MapController {
 			});
 		}
 		return cmbCoords;
-	}
-	
-	private JTextArea getTxtNote() {
-		if (txtNote == null) {
-			txtNote = new JTextArea(6, 30);
-			txtNote.setEditable(false);
-		}
-		return txtNote;
-	}
-	
-	private JScrollPane getScrNote() {
-		if (scrNote == null) {
-			scrNote = new JScrollPane(getTxtNote());
-		}
-		return scrNote;
-	}
-	
-	/**
-	 * Refreshes the application's components. This method checks the updating flag at the start of the method and returns without action if it is true. 
-	 * If it is not true then it sets it to true before requesting the application's frame to repaint itself. This calls the repaint method of all child
-	 * components. The updating flag is set to false at the end of the method. The updating flag is required to prevent an endless loop as the scroll 
-	 * bars' values may be changed during the refresh which would trigger another call to the refresh() method.
-	 */
-	private void refresh() {
-		if (updating) {
-			return;
-		}
-		updating = true;
-		getEdit().refresh();
-		getCmbCoords().setSelectedItem(getModel().getCurrentCoOrdinates());
-		updating = false;
-
-		getFrame().getRootPane().repaint();
-		getUndoAction().setEnabled(undoManager.canUndo());
-		getUndoAction().putValue(Action.SHORT_DESCRIPTION, undoManager.getUndoPresentationName());
-		getRedoAction().setEnabled(undoManager.canRedo());
-		getRedoAction().putValue(Action.SHORT_DESCRIPTION, undoManager.getRedoPresentationName());
-		
 	}
 	
 	/**
@@ -1141,1007 +1031,6 @@ public class MapController {
 			rect = new Rectangle(rect.x + chk, rect.y, rect.width, rect.height);
 		}
 		getModel().setView(bound(rect));
-	}
-	
-	/**
-	 * Makes an ImageIcon from the filepath specified
-	 * @param path the path to the image file
-	 * @return an ImageIcon
-	 */
-	private ImageIcon makeImageIcon(String path) {
-		URL url = this.getClass().getResource(path);
-        if (url == null) {
-            return null;
-        } else {
-            return new ImageIcon(url);
-        }
-	}
-
-	/**
-	 * Returns the Map Dimensions dialog box
-	 * @return the Map Dimensions dialog box
-	 */
-	private MapDimensions getMapDimensions() {
-		if (frmDimensions == null) {
-			frmDimensions = new MapDimensions(getFrame());
-		}
-		return frmDimensions;
-	}
-	
-	private MapFind getMapFind() {
-		if (frmFind == null) {
-			frmFind = new MapFind(getFrame());
-		}
-		return frmFind;
-	}
-	
-	private MapText getMapText() {
-		if (frmText == null) {
-			frmText = new MapText(getFrame());
-		}
-		return frmText;
-	}
-
-	private void clearFilters(JFileChooser fc) {
-		FileFilter[] ff = fc.getChoosableFileFilters();
-		for (int i = 0; i < ff.length; i++) {
-			fc.removeChoosableFileFilter(ff[i]);
-		}
-	}
-	
-	private JFileChooser getSaveFileChooser() {
-		if (save == null) {
-			save = new JFileChooser();
-			save.setAcceptAllFileFilterUsed(false);
-			List<FileFilter> filters = FactoryManager.getInstance().getWriteFilters();
-			for (int i = 0; i < filters.size(); i++) {
-				save.addChoosableFileFilter(filters.get(i));
-			}
-		}
-		return save;
-	}
-	
-	private JFileChooser getLoadFileChooser() {
-		if (load == null) {
-			load = new JFileChooser();
-			load.setAcceptAllFileFilterUsed(false);
-			List<FileFilter> filters = FactoryManager.getInstance().getReadFilters();
-			for (int i = 0; i < filters.size(); i++) {
-				load.addChoosableFileFilter(filters.get(i));
-			}
-		}
-		return load;
-	}
-
-	private JFileChooser getExtractFileChooser() {
-		if (extract == null) {
-			extract = new JFileChooser();
-			extract.setAcceptAllFileFilterUsed(false);
-			extract.setMultiSelectionEnabled(true);
-			
-			FileFilter extractFilter = new FileFilter() {
-				@Override
-				public boolean accept(File file) {
-					return file.isDirectory() || file.getName().toLowerCase().endsWith(".pdf");
-				}
-
-				@Override
-				public String getDescription() {
-					return "MI Turn Result Files (*.pdf)";
-				}
-			};
-
-			extract.addChoosableFileFilter(extractFilter);
-		}
-		return extract;
-	}
-	
-	private JFileChooser getTransFileChooser() {
-		if (trans == null) {
-			trans = new JFileChooser();
-			trans.setAcceptAllFileFilterUsed(false);
-			List<FileFilter> filters = FactoryManager.getInstance().getTranslateFilters();
-			for (int i = 0; i < filters.size(); i++) {
-				trans.addChoosableFileFilter(filters.get(i));
-			}
-		}
-		return trans;
-	}
-
-	private JFileChooser getDirectoryChooser() {
-		if (dir == null) {
-			
-			dir = new JFileChooser();
-         	dir.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-		}
-		return dir;
-	}
-	
-	private JFileChooser getCSVFileChooser() {
-		if (csv == null) {
-			csv = new JFileChooser();
-			csv.setFileFilter(new FileFilter() {
-
-				@Override
-				public boolean accept(File f) {
-					return f.getName().toLowerCase().endsWith(".csv");
-				}
-
-				@Override
-				public String getDescription() {
-					return "JIM Translation Files (.csv)";
-				}
-				
-			});
-			csv.setAcceptAllFileFilterUsed(false);
-			List<FileFilter> filters = FactoryManager.getInstance().getTranslateFilters();
-			for (int i = 0; i < filters.size(); i++) {
-				csv.addChoosableFileFilter(filters.get(i));
-			}
-		}
-		return csv;
-	}
-
-	class NewAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public NewAction() {
-	        putValue(Action.NAME, "New");
-	        putValue(Action.SHORT_DESCRIPTION, "Create new map");
-	        putValue(Action.LONG_DESCRIPTION, "Create a new map");
-	        putValue(Action.SMALL_ICON, makeImageIcon("new-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control N"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_N));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			MapDimensions d = getMapDimensions();
-			int[] dims = d.getDimensions();
-			if (dims != null && dims.length == 4 && dims[2] > 0 && dims[3] > 0) {
-				setModel(new StandardMapModel(getModel().getSize(), new MapData(dims[0], dims[1], dims[2], dims[3]), "Unsaved.jim"));
-			}
-		}
-
-	}
-
-	class OpenAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public OpenAction() {
-	        putValue(Action.NAME, "Open");
-	        putValue(Action.SHORT_DESCRIPTION, "Open map");
-	        putValue(Action.LONG_DESCRIPTION, "Open a map");
-	        putValue(Action.SMALL_ICON, makeImageIcon("open-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control O"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_O));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			JFileChooser fc = getLoadFileChooser();
-			int returnVal = fc.showOpenDialog(getFrame());
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				MapData md;
-				try {
-					md = FactoryManager.getInstance().createFrom(fc.getSelectedFile());
-					MapModel m = new StandardMapModel(getModel().getSize(), md, fc.getSelectedFile().getName());
-					setModel(m);
-					refresh();
-					getMiniMap().revalidate();
-					if (FactoryManager.getInstance().getUnmatched().size() > 0) {
-						StringBuilder sb = new StringBuilder();
-						sb.append("There were some features that were not recognised:\n");
-						Iterator<String> it = FactoryManager.getInstance().getUnmatched().iterator();
-						while (it.hasNext()) {
-							sb.append(it.next());
-							sb.append("\n");
-						}
-						getTxtNote().setText(sb.toString());
-						getTxtNote().setCaretPosition(0);
-						JOptionPane.showMessageDialog(getFrame(), getScrNote(), "Cannot read all data", JOptionPane.WARNING_MESSAGE);
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(getFrame(), "Cannot load map from " + fc.getSelectedFile().getAbsolutePath(), "Cannot open file", JOptionPane.ERROR_MESSAGE);
-				}
-			}
-		}
-	}
-
-	class SaveAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public SaveAction() {
-	        putValue(Action.NAME, "Save");
-	        putValue(Action.SHORT_DESCRIPTION, "Save map");
-	        putValue(Action.LONG_DESCRIPTION, "Save the map");
-	        putValue(Action.SMALL_ICON, makeImageIcon("save-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control S"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_S));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			JFileChooser fc = getSaveFileChooser();
-			int returnVal = fc.showSaveDialog(getFrame());
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				File file = suffixFile(fc);
-				
-				if (file.exists()) {
-					int confirm = JOptionPane.showConfirmDialog(getFrame(), file.getName() + " exists. Do you want to overwrite?");
-					if (confirm != JOptionPane.OK_OPTION) {
-						return;
-					}
-				}
-				try {
-					FactoryManager.getInstance().saveTo(getModel().getData(), file);
-					getModel().setName(file.getName());
-					setMapLabel(getModel());
-				} catch (Exception e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(getFrame(), "Cannot save map to " + file.getAbsolutePath());
-				}
-			}
-		}
-	}
-
-	class SaveDifferencesAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public SaveDifferencesAction() {
-	        putValue(Action.NAME, "Diff");
-	        putValue(Action.SHORT_DESCRIPTION, "Save differences");
-	        putValue(Action.LONG_DESCRIPTION, "Save the squares that are different in the compared map");
-	        putValue(Action.SMALL_ICON, makeImageIcon("diff-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control D"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_D));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			if (getModel().getClass().equals(DiffMapModel.class)) {
-				DiffMapModel d = (DiffMapModel)getModel();
-				MapData md = d.getDifferences();
-
-				JFileChooser fc = getSaveFileChooser();
-				int returnVal = fc.showSaveDialog(getFrame());
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					File file = suffixFile(fc);
-
-					if (file.exists()) {
-						int confirm = JOptionPane.showConfirmDialog(getFrame(), file.getName() + " exists. Do you want to overwrite?");
-						if (confirm != JOptionPane.OK_OPTION) {
-							return;
-						}
-					}
-					
-					try {
-						FactoryManager.getInstance().saveTo(md, file);
-					} catch (IOException e) {
-						e.printStackTrace();
-						JOptionPane.showMessageDialog(getFrame(), "Cannot save map to " + file.getAbsolutePath());
-					}
-				}
-			} else {
-				JOptionPane.showMessageDialog(getFrame(), "This can only be done if you are comparing maps");
-			}
-		}
-	}
-
-	class SaveMergedAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public SaveMergedAction() {
-	        putValue(Action.NAME, "Merge");
-	        putValue(Action.SHORT_DESCRIPTION, "Save Merged maps");
-	        putValue(Action.LONG_DESCRIPTION, "Save all the features from both maps");
-	        putValue(Action.SMALL_ICON, makeImageIcon("merge-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control M"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_M));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			if (getModel().getClass().equals(DiffMapModel.class)) {
-				DiffMapModel d = (DiffMapModel)getModel();
-				MapData md = d.getMerged();
-
-				JFileChooser fc = getSaveFileChooser();
-				int returnVal = fc.showSaveDialog(getFrame());
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					File file = suffixFile(fc);
-
-					if (file.exists()) {
-						int confirm = JOptionPane.showConfirmDialog(getFrame(), file.getName() + " exists. Do you want to overwrite?");
-						if (confirm != JOptionPane.OK_OPTION) {
-							return;
-						}
-					}
-					
-					try {
-						FactoryManager.getInstance().saveTo(md, file);
-					} catch (IOException e) {
-						e.printStackTrace();
-						JOptionPane.showMessageDialog(getFrame(), "Cannot save map to " + file.getAbsolutePath());
-					}
-				}
-			} else {
-				JOptionPane.showMessageDialog(getFrame(), "This can only be done if you are comparing maps");
-			}
-		}
-	}
-
-	class TranslateAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public TranslateAction() {
-	        putValue(Action.NAME, "Translate");
-	        putValue(Action.SHORT_DESCRIPTION, "Create translation file");
-	        putValue(Action.LONG_DESCRIPTION, "Create a translation file for this file");
-	        putValue(Action.SMALL_ICON, makeImageIcon("trans-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control T"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_T));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			JFileChooser fc = getTransFileChooser();
-			int returnVal = fc.showOpenDialog(getFrame());
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				File file = fc.getSelectedFile();
-				
-				if (!file.exists()) {
-					JOptionPane.showMessageDialog(getFrame(), "You must select an existing file to read from", "Cannot open file", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				
-				String text = "";
-				try {
-					text = FactoryManager.getInstance().listTranslations(file);
-				} catch (IOException e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(getFrame(), "Cannot read from " + file.getAbsolutePath() + " or related files", "Cannot open file", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-
-				JFileChooser csv = getCSVFileChooser();
-				returnVal = csv.showSaveDialog(getFrame());
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					file = suffixFile(fc);
-					if (csv.getSelectedFile().exists()) {
-						int confirm = JOptionPane.showConfirmDialog(getFrame(), file.getName() + " exists. Do you want to overwrite?");
-						if (confirm != JOptionPane.OK_OPTION) {
-							return;
-						}
-					}
-					try {
-						FileWriter write = new FileWriter(file);
-						write.write(text);
-						write.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-						JOptionPane.showMessageDialog(getFrame(), "Cannot save translations to " + file.getAbsolutePath());
-					}
-				}
-			}
-		}
-	}
-
-	class FindAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public FindAction() {
-	        putValue(Action.NAME, "Find");
-	        putValue(Action.SHORT_DESCRIPTION, "Find Feature");
-	        putValue(Action.LONG_DESCRIPTION, "Find features on the map");
-	        putValue(Action.SMALL_ICON, makeImageIcon("find-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control F"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			MapFind mf = getMapFind(); 
-			MapFind.FindData fd = mf.getFind();
-			List<Point> list;
-			String searchTerm;
-			if (fd.getFeature() != null) {
-				list = getFeatureList(fd.getFeature(), fd.getDistance());
-				getSearch().setFoundID(fd.getFeature().getId());
-				getSearch().setFoundNote(null);
-				searchTerm = fd.getFeature().getName();
-			} else if (fd.getNote() != null) {
-				list = getNoteList(fd.getNote(), fd.getDistance());
-				getSearch().setFoundID((short)0);
-				getSearch().setFoundNote(fd.getNote());
-				searchTerm = fd.getNote();
-			} else {
-				return;
-			}
-			getSearch().setFoundSquares(list);
-			if (list.size() > 0) {
-				getStatusLabel().setText("Found " + list.size() + " " + searchTerm);
-			} else {
-				getStatusLabel().setText("Cannot find " + searchTerm);
-			}
-			setSearch(search);
-			refresh();
-		}
-		
-		private List<Point> getFeatureList(Feature f, int d) {
-			if (d < 0) {
-				return getIndex().getPoints(f);
-			} else {
-				return getIndex().getPoints(f, getModel().getSelected(), d);
-			}
-		}
-
-		private List<Point> getNoteList(String n, int d) {
-			if (d < 0) {
-				return getIndex().getPoints(n);
-			} else {
-				return getIndex().getPoints(n, getModel().getSelected(), d);
-			}
-		}
-}
-	
-	class CoordAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public CoordAction() {
-	        putValue(Action.NAME, "Origin");
-	        putValue(Action.SHORT_DESCRIPTION, "Set as default Co-ordinates");
-	        putValue(Action.LONG_DESCRIPTION, "Set as default Co-ordinates");
-	        putValue(Action.SMALL_ICON, makeImageIcon("set-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control O"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_O));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			Coordinate coord = (Coordinate)getCmbCoords().getSelectedItem();
-			if (coord != null) {
-				int result = JOptionPane.showConfirmDialog(getFrame(), "Are you sure you want to set this map's default co-ordinates to " + coord + "?\n", "Set Default Co-Ordinates", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-				if (result == JOptionPane.YES_OPTION) {
-					UndoableChange change = getModel().setDefaultCoOrdinates(coord);
-					if (change != null) {
-						change.setPresentationName("Set default co-ordinates to " + coord.getName());
-						undoManager.addEdit(change);
-					}
-					setMapLabel(getModel());
-					refresh();
-				}
-			}
-		}
-	}
-
-	class UndoAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public UndoAction() {
-	        putValue(Action.NAME, "Undo");
-	        putValue(Action.SHORT_DESCRIPTION, "Undo change");
-	        putValue(Action.LONG_DESCRIPTION, "Undo a change to the map");
-	        putValue(Action.SMALL_ICON, makeImageIcon("undo-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control U"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_U));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			if (undoManager.canUndo()) {
-				undoManager.undo();
-				refresh();
-			}
-		}
-	}
-
-	class RedoAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public RedoAction() {
-	        putValue(Action.NAME, "Redo");
-	        putValue(Action.SHORT_DESCRIPTION, "Redo change");
-	        putValue(Action.LONG_DESCRIPTION, "Redo a change to the map");
-	        putValue(Action.SMALL_ICON, makeImageIcon("redo-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control R"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_R));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			if (undoManager.canRedo()) {
-				undoManager.redo();
-				refresh();
-			}
-		}
-	}
-	
-//	class DiffAction extends AbstractAction {
-//
-//		/**
-//		 * 
-//		 */
-//		private static final long serialVersionUID = 1L;
-//		
-//		public DiffAction() {
-//	        putValue(Action.NAME, "Diff");
-//	        putValue(Action.SHORT_DESCRIPTION, "Create a diff file from this map");
-//	        putValue(Action.LONG_DESCRIPTION, "Create a diff file from this map");
-//	        putValue(Action.SMALL_ICON, makeImageIcon("diff-16x16.gif"));
-//	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control D"));
-//	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_D));
-//		}
-//		
-//		@Override
-//		public void actionPerformed(ActionEvent evt) {
-//			JFileChooser fc = new JFileChooser();
-//			fc.setAcceptAllFileFilterUsed(false);
-//			clearFilters(fc);
-//			List<FileFilter> filters = FactoryManager.getInstance().getReadFilters();
-//			for (int i = 0; i < filters.size(); i++) {
-//				fc.addChoosableFileFilter(filters.get(i));
-//			}
-//			int returnVal = fc.showOpenDialog(getFrame());
-//			if (returnVal == JFileChooser.APPROVE_OPTION) {
-//				MapData base;
-//				try {
-//					base = FactoryManager.getInstance().createFrom(fc.getSelectedFile());
-//					MapModel extra = getModel();
-//					if (extra.isDirty()) {
-//						JOptionPane.showMessageDialog(getFrame(), "You must save your map before creating a diff");
-//						return;
-//					}
-//					MapData diff = Diff.diff(((StandardMapModel)getModel()).getData(), base);
-//					MapModel m = new StandardMapModel(getModel().getSize(), diff, "Diff");
-//					setModel(m);
-//					refresh();
-//					getMiniMap().revalidate();
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//					JOptionPane.showMessageDialog(getFrame(), "Cannot load map from " + fc.getSelectedFile().getAbsolutePath());
-//				} catch (IllegalArgumentException e) {
-//					e.printStackTrace();
-//					JOptionPane.showMessageDialog(getFrame(), e.getMessage());
-//				}
-//			}
-//		}
-//	}
-//
-//	class MergeAction extends AbstractAction {
-//
-//		/**
-//		 * 
-//		 */
-//		private static final long serialVersionUID = 1L;
-//		
-//		public MergeAction() {
-//	        putValue(Action.NAME, "Merge");
-//	        putValue(Action.SHORT_DESCRIPTION, "Merge this map");
-//	        putValue(Action.LONG_DESCRIPTION, "Merge this map with another");
-//	        putValue(Action.SMALL_ICON, makeImageIcon("merge-16x16.gif"));
-//	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control M"));
-//	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_M));
-//		}
-//		
-//		@Override
-//		public void actionPerformed(ActionEvent evt) {
-//			JFileChooser fc = new JFileChooser();
-//			fc.setAcceptAllFileFilterUsed(false);
-//			clearFilters(fc);
-//			List<FileFilter> filters = FactoryManager.getInstance().getReadFilters();
-//			for (int i = 0; i < filters.size(); i++) {
-//				fc.addChoosableFileFilter(filters.get(i));
-//			}
-//			int returnVal = fc.showOpenDialog(getFrame());
-//			if (returnVal == JFileChooser.APPROVE_OPTION) {
-//				MapData base;
-//				try {
-//					base = FactoryManager.getInstance().createFrom(fc.getSelectedFile());
-//					MapModel extra = getModel();
-//					if (extra.isDirty()) {
-//						JOptionPane.showMessageDialog(getFrame(), "You must save your map before merging it with another");
-//						return;
-//					}
-//					MapData merge = Merge.merge(((StandardMapModel)getModel()).getData(), base);
-//					MapModel m = new StandardMapModel(getModel().getSize(), merge, getModel().getName());
-//					setModel(m);
-//					refresh();
-//					getMiniMap().revalidate();
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//					JOptionPane.showMessageDialog(getFrame(), "Cannot load map from " + fc.getSelectedFile().getAbsolutePath());
-//				} catch (IllegalArgumentException e) {
-//					e.printStackTrace();
-//					JOptionPane.showMessageDialog(getFrame(), e.getMessage());
-//				}
-//			}
-//		}
-//	}
-
-	class CompareAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public CompareAction() {
-	        putValue(Action.NAME, "Compare");
-	        putValue(Action.SHORT_DESCRIPTION, "Compare this map to another");
-	        putValue(Action.LONG_DESCRIPTION, "Compare this map to another");
-	        putValue(Action.SMALL_ICON, makeImageIcon("compare-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control P"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_P));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			JFileChooser fc = new JFileChooser();
-			fc.setAcceptAllFileFilterUsed(false);
-			clearFilters(fc);
-			List<FileFilter> filters = FactoryManager.getInstance().getReadFilters();
-			for (int i = 0; i < filters.size(); i++) {
-				fc.addChoosableFileFilter(filters.get(i));
-			}
-			int returnVal = fc.showOpenDialog(getFrame());
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				MapData smd;
-				try {
-					smd = FactoryManager.getInstance().createFrom(fc.getSelectedFile());
-					MapModel primary = getModel();
-					if (primary.isDirty()) {
-						JOptionPane.showMessageDialog(getFrame(), "You must save your map before comparing");
-						return;
-					}
-
-					MapModel secondary = new StandardMapModel(primary.getSize(), smd, fc.getSelectedFile().getName());
-
-					MapModel m = new DiffMapModel(primary, secondary);
-					
-					setModel(m);
-					refresh();
-					getMiniMap().revalidate();
-				} catch (IOException e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(getFrame(), "Cannot load map from " + fc.getSelectedFile().getAbsolutePath());
-				} catch (IllegalArgumentException e) {
-					e.printStackTrace();
-					JOptionPane.showMessageDialog(getFrame(), e.getMessage());
-				}
-			}
-		}
-	}
-
-	class FlagAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public FlagAction() {
-	        putValue(Action.NAME, "Show Flags");
-	        putValue(Action.SHORT_DESCRIPTION, "Show flags on the map");
-	        putValue(Action.LONG_DESCRIPTION, "Show Flags on the map");
-	        putValue(Action.SMALL_ICON, makeImageIcon("flag-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control F"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			JToggleButton cmd = (JToggleButton)evt.getSource();
-			getView().setViewFlags(cmd.isSelected());
-			refresh();
-		}
-	}
-
-	class ScryeAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public ScryeAction() {
-	        putValue(Action.NAME, "Scrye");
-	        putValue(Action.SHORT_DESCRIPTION, "Enter Scrying data on to map");
-	        putValue(Action.LONG_DESCRIPTION, "Enter Scrying data on to map");
-	        putValue(Action.SMALL_ICON, makeImageIcon("ball-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control Y"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_Y));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			Point p = getModel().getSelected();
-			if (p == null) {
-				JOptionPane.showMessageDialog(getFrame(), "You must select the square where the scrying occurred.");
-				return;
-			}
-			
-			String text = getMapText().getText();
-			if (text == null) {
-				return; 
-			}
-
-			TurnReader r = new TurnReader(text);
-			List<net.edwebb.mi.data.Sighting> list = TurnDigester.readScrye(r, p.x, p.y);
-			StringBuilder sb = new StringBuilder();
-			Iterator<net.edwebb.mi.data.Sighting> it = list.iterator();
-			while (it.hasNext()) {
-				net.edwebb.mi.data.Sighting s = it.next();
-				if (s.getFeature() == null) {
-					sb.append("(" + s.getSquare().y  + "," + s.getSquare().x + ") " + s.getThing() + "\n");
-				} else {
-					handleFeatureEdit(s.getSquare(), EditPanel.ADD, s.getFeature());
-				}
-			}
-			
-			if (sb.length() > 0) {
-				sb.insert(0, "These sightings were not recognised:\n");
-				getTxtNote().setText(sb.toString());
-				getTxtNote().setCaretPosition(0);
-				JOptionPane.showMessageDialog(getFrame(), getScrNote(), "Cannot read all data", JOptionPane.WARNING_MESSAGE);
-			}
-			
-		}
-	}
-	
-	class ExtractAction extends AbstractAction {
-
-		/**
-		 * 
-		 */
-		private static final long serialVersionUID = 1L;
-		
-		public ExtractAction() {
-	        putValue(Action.NAME, "Extract");
-	        putValue(Action.SHORT_DESCRIPTION, "Extract data from Turns");
-	        putValue(Action.LONG_DESCRIPTION, "Extract data from Monster Island pdf files");
-	        putValue(Action.SMALL_ICON, makeImageIcon("extract-16x16.gif"));
-	        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control X"));
-	        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_X));
-		}
-		
-		@Override
-		public void actionPerformed(ActionEvent evt) {
-			
-			JFileChooser fc = getExtractFileChooser();
-			int returnVal = fc.showOpenDialog(getFrame());
-			if (returnVal != JFileChooser.APPROVE_OPTION) {
-				return;
-			}
-			
-			File[] files = fc.getSelectedFiles();
-			PDFExtractor pdfExtractor = new PDFExtractor();
-			
-			MIExtractor miExtractor;
-			
-			fc = getDirectoryChooser();
-			returnVal = fc.showOpenDialog(getFrame());
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				miExtractor = new MIExtractor(fc.getSelectedFile());
-			} else {
-				miExtractor = new MIExtractor();
-			}
-			
-			ExtractTask task = new ExtractTask(pdfExtractor, miExtractor, files);
-			task.execute();
-		}
-	}
-
-	class ExtractTask extends SwingWorker<Object, String> {
-
-		private PDFExtractor pdfExtractor;
-		private MIExtractor miExtractor;
-		private File[] files;
-		private Set<Sighting> masterSightings = new HashSet<Sighting>();
-		
-		public ExtractTask(PDFExtractor pdfExtractor, MIExtractor miExtractor, File[] files) {
-			this.pdfExtractor = pdfExtractor;
-			this.miExtractor = miExtractor;
-			this.files = files;
-		}
-		
-		@Override
-		protected Object doInBackground() throws Exception {
-
-			readTurns();
-			addToMap();
-
-			refresh();
-			getMiniMap().revalidate();
-			
-			return null;
-		}
-
-		private void readTurns() {
-			String mode = "D";
-		    int[] coords = new int[] {0,0}; //getCoords();  
-			
-			Stats stats = null;
-			
-			String text = null;
-			for (int i = 0; i < files.length; i++) {
-				getStatusLabel().setText("Processing " + files[i].getName());
-				try {
-					text = pdfExtractor.extract(files[i]);
-				} catch (IOException e) {
-					JOptionPane.showMessageDialog(getFrame(), "Cannot read data from " + files[i].getAbsolutePath());
-					getStatusLabel().setText("Java Island Mapper");
-					return;
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.out.println();
-				}
-				if (text == null || text.length() == 0) {
-					JOptionPane.showMessageDialog(getFrame(), "Cannot find any text in " + files[i].getAbsolutePath());
-					getStatusLabel().setText("Java Island Mapper");
-					return;
-				}
-				try {
-					Turn turn = miExtractor.extract(new StringReader(text), (i==0 ? "N" : mode), coords[0], coords[1], stats);
-					coords[0] = turn.getX();
-					coords[1] = turn.getY();
-					stats = turn.getStats();
-					masterSightings.addAll(turn.getSightings());
-				} catch (IOException e) {
-					JOptionPane.showMessageDialog(getFrame(), "Cannot extract data from " + files[i].getAbsolutePath());
-					getStatusLabel().setText("Java Island Mapper");
-					return;
-				} catch (Exception e) {
-					e.printStackTrace();
-					System.out.println();
-				}
-			}
-		}
-		
-		private void addToMap() {
-			StringBuilder sb = new StringBuilder();
-			String result;
-			Iterator<Sighting> it = masterSightings.iterator();
-			UndoableCombinedChange change = new UndoableCombinedChange("Update map with extracted information");
-			
-			while (it.hasNext()) {
-				Sighting s = it.next();
-				
-				if (s.getCode().length() == 8 && s.getCode().startsWith("%")) {
-					for (int i = 0; i < s.getCode().length(); i+=4) {
-						result = addFeature(new Sighting(s.getX(),s.getY(),s.getCode().substring(i, i + 4)), change);
-						if (result != null) {
-							sb.append(result);
-						}
-					}
-				} else {
-					result = addFeature(s, change);
-					if (result != null) {
-						sb.append(result);
-					}
-				}
-			}
-
-			if (change.hasChanges()) {
-				undoManager.addEdit(change);
-			}
-			getStatusLabel().setText("Java Island Mapper");
-			refresh();
-			
-			if (sb.length() > 0) {
-				sb.insert(0, "These sightings were not recognised:\n");
-				getTxtNote().setText(sb.toString());
-				getTxtNote().setCaretPosition(0);
-				JOptionPane.showMessageDialog(getFrame(), getScrNote(), "Cannot read all data", JOptionPane.WARNING_MESSAGE);
-			}
-		}
-
-		private String addFeature(Sighting s, UndoableCombinedChange masterChange) {
-			Feature f = DataStore.getInstance().getFeatureByCode(s.getCode());
-			
-			if (f == null) {
-				return "(" + s.getY()  + "," + s.getX() + ") " + s.getCode() + "\n";
-			} else {
-				Point point = new Point(s.getX(), s.getY());
-				Rectangle rect = getModel().getBounds();
-				rect = new Rectangle(rect.x, rect.y - rect.height, rect.width, rect.height);
-				if (!rect.contains(point)) {
-					return "(" + s.getY()  + "," + s.getX() + ") " + s.getCode() + " (out of bounds)\n";
-				} else {
-					UndoableCombinedChange change = handleFeatureEdit(point, EditPanel.ADD, f);
-					masterChange.addAllChanges(change);
-					undoManager.removeNextUndo();
-					getMiniMap().setPoint(point, DataStore.getInstance().getTerrain(getModel().getSquare(point)[0]));
-				}
-			}
-			return null;
-		}
-	}
-	
-	public class ChangeUndoManager extends UndoManager {
-
-		@Override
-		public boolean replaceEdit(UndoableEdit anEdit) {
-			UndoableEdit nextEdit = editToBeUndone();
-			if (nextEdit == null) {
-				return false;
-			} else {
-				edits.set(edits.indexOf(nextEdit), anEdit);
-				return true;
-			}
-		}
-		
-		public boolean removeNextUndo() {
-			UndoableEdit nextEdit = editToBeUndone();
-			if (nextEdit == null) {
-				return false;
-			} else {
-				trimEdits(edits.size() - 1, edits.size() - 1);
-				return true;
-			}
-		}
-
-		public boolean removeNextRedo() {
-			UndoableEdit nextEdit = editToBeRedone();
-			if (nextEdit == null) {
-				return false;
-			} else {
-				return edits.remove(nextEdit);
-			}
-		}
-}			
-	
-	public File suffixFile(JFileChooser fc) {
-		File file = fc.getSelectedFile();
-		
-		// Add the correct suffix if the user was too lazy to write it in themselves
-		String desc = fc.getFileFilter().getDescription();
-		String suffix = desc.substring(desc.lastIndexOf("(")+2, desc.lastIndexOf(")"));
-		if (!file.getName().endsWith(suffix)) {
-			file = new File(file.getParentFile(), file.getName() + suffix);
-		}
-		return file;
 	}
 	
 	public static void main (String[] args) throws IOException {

@@ -1,4 +1,4 @@
-package net.edwebb.jim.data;
+package net.edwebb.jim.model;
 
 import java.awt.Point;
 import java.util.HashMap;

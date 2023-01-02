@@ -2,7 +2,7 @@ package net.edwebb.jim.factory;
 
 import java.awt.Point;
 
-import net.edwebb.jim.data.MapData;
+import net.edwebb.jim.model.MapData;
 import net.edwebb.mi.data.Coordinate;
 import net.edwebb.mi.data.Decoder;
 

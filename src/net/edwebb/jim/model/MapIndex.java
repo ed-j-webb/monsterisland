@@ -1,4 +1,4 @@
-package net.edwebb.jim.data;
+package net.edwebb.jim.model;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -10,8 +10,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import net.edwebb.jim.model.MapModel;
-import net.edwebb.jim.model.UndoableIndexChange;
+import net.edwebb.jim.model.events.FeatureChangeEvent;
+import net.edwebb.jim.model.events.FlagChangeEvent;
+import net.edwebb.jim.model.events.MapChangeEvent;
+import net.edwebb.jim.model.events.MapChangeListener;
+import net.edwebb.jim.model.events.NoteChangeEvent;
+import net.edwebb.jim.model.events.TerrainChangeEvent;
+import net.edwebb.jim.model.events.MapChangeEvent.MAP_CHANGE_TYPE;
 import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Feature;
 
@@ -21,12 +26,14 @@ import net.edwebb.mi.data.Feature;
  * @author Ed Webb
  *
  */
-public class MapIndex {
+public class MapIndex implements MapChangeListener {
 	
 	private static final List<Point> EMPTY_LIST = new ArrayList<Point>(0);
 	
+	private MapModel model;
+	
 	// A map keyed on Feature with a list of squares where the feature is present
-	private Map<Feature, List<Point>> index;
+	private Map<Feature, List<Point>> features;
 	
 	// A map keyed on note with the square where the note is present.
 	private Map<String, List<Point>> notes;
@@ -37,17 +44,25 @@ public class MapIndex {
 	/**
 	 * Creates a new empty MapIndex
 	 */
-	public MapIndex() {
-		index = new HashMap<Feature, List<Point>>();
-		notes = new HashMap<String, List<Point>>();
-		extras = new HashMap<Integer, List<Point>>();
+	public MapIndex(MapModel model) {
+		setModel(model);
 	}
 	
 	/**
 	 * Indexes the given model
 	 * @param model the map to index
 	 */
-	public void index(MapModel model) {
+	public void setModel(MapModel model) {
+		if (this.model != null) {
+			this.model.removeMapChangeListener(this);
+		}
+		this.model = model;
+		model.addMapChangeListener(this);
+		
+		features = new HashMap<Feature, List<Point>>();
+		notes = new HashMap<String, List<Point>>();
+		extras = new HashMap<Integer, List<Point>>();
+
 		Point p = new Point(0,0);
 		Rectangle bounds = model.getBounds();
 		for(int x = bounds.x; x < bounds.width + bounds.width; x++) {
@@ -59,7 +74,7 @@ public class MapIndex {
 					for (int z = 1; z < sqr.length; z++) {
 						Feature f = DataStore.getInstance().getFeatureById(sqr[z]);
 						if (f != null) {
-							addPoint(f, pt);
+							addFeature(f, pt);
 						}
 					}
 				}
@@ -68,23 +83,64 @@ public class MapIndex {
 					Point pt = new Point(p);
 					addNote(note.toLowerCase(), pt);
 				}
-				Integer extra = model.getExtra(p, Short.MIN_VALUE);
-				if (extra != 0) {
-					Point pt = new Point(p);
-					addExtra(extra, pt);
-				}
+				checkExtra(p);
 			}
 		}
 		sortPoints();
 	}
 	
+	@Override
+	public void mapChanged(MapChangeEvent event) {
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.NOTE)) {
+			NoteChangeEvent noteEvent = (NoteChangeEvent)event;
+			if (noteEvent.getOldNote() != null) {
+				removeNote(noteEvent.getOldNote(), noteEvent.getSquare());
+			}
+			if (noteEvent.getNewNote() != null) {
+				addNote(noteEvent.getNewNote(), noteEvent.getSquare());
+			}
+			return;
+		}
+		
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FLAG)) {
+			FlagChangeEvent flagEvent = (FlagChangeEvent)event;
+			if (flagEvent.getState() == true) {
+				addFeature(flagEvent.getFlag(), flagEvent.getSquare());
+			} else {
+				removeFeature(flagEvent.getFlag(), flagEvent.getSquare());
+			}
+			return;
+		}
+
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FEATURE)) {
+			FeatureChangeEvent featureEvent = (FeatureChangeEvent)event;
+			if (featureEvent.isAdded()) {
+				addFeature(featureEvent.getFeature(), featureEvent.getSquare());
+			} else {
+				removeFeature(featureEvent.getFeature(), featureEvent.getSquare());
+			}
+			return;
+		}
+
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.TERRAIN)) {
+			TerrainChangeEvent terrainEvent = (TerrainChangeEvent)event;
+			if (terrainEvent.getOldTerrain() != null) {
+				removeFeature(terrainEvent.getOldTerrain(), terrainEvent.getSquare());
+			}
+			if (terrainEvent.getNewTerrain() != null) {
+				addFeature(terrainEvent.getNewTerrain(), terrainEvent.getSquare());
+			}
+			return;
+		}
+	}
+
 	/**
 	 * Returns all squares where the feature is present
 	 * @param f the feature to search for
 	 * @return a list of squares where the feature is present
 	 */
 	public List<Point> getPoints(Feature f) {
-		List<Point> l = index.get(f);
+		List<Point> l = features.get(f);
 		if (l == null) {
 			l = EMPTY_LIST;
 		}
@@ -252,17 +308,15 @@ public class MapIndex {
 	 * @param f the feature
 	 * @param p the square
 	 */
-	public UndoableIndexChange addPoint(Feature f, Point p) {
-		List<Point> l = index.get(f);
+	private void addFeature(Feature f, Point p) {
+		List<Point> l = features.get(f);
 		if (l == null) {
 			l = new ArrayList<Point>();
-			index.put(f, l);
+			features.put(f, l);
 		}
-		if (l.contains(p)) {
-			return null;
-		} else {
+		if (!l.contains(p)) {
 			l.add(p);
-			return new UndoableIndexChange(this, p, f, true);
+			checkExtra(p);
 		}
 	}
 	
@@ -271,13 +325,11 @@ public class MapIndex {
 	 * @param f the feature
 	 * @param p the square
 	 */
-	public UndoableIndexChange removePoint(Feature f, Point p) {
-		List<Point> l = index.get(f);
+	private void removeFeature(Feature f, Point p) {
+		List<Point> l = features.get(f);
 		if (l != null && l.contains(p)) {
 			l.remove(p);
-			return new UndoableIndexChange(this, p, f, false);
-		} else {
-			return null;
+			checkExtra(p);
 		}
 	}
 	
@@ -286,17 +338,15 @@ public class MapIndex {
 	 * @param n the note
 	 * @param p the square
 	 */
-	public UndoableIndexChange addNote(String n, Point p) {
+	private void addNote(String n, Point p) {
 		List<Point> l = notes.get(n);
 		if (l == null) {
 			l = new ArrayList<Point>();
 			notes.put(n, l);
 		}
-		if ( l.contains(p)) {
-			return null;
-		} else {
+		if (!l.contains(p)) {
 			l.add(p);
-			return new UndoableIndexChange(this, p, n, true); 
+			checkExtra(p);
 		}
 	}
 	
@@ -305,39 +355,37 @@ public class MapIndex {
 	 * @param n the note
 	 * @param p the square
 	 */
-	public UndoableIndexChange removeNote(String n, Point p) {
+	private void removeNote(String n, Point p) {
 		List<Point> l = notes.get(n);
 		if (l != null && l.contains(p)) {
 			l.remove(p);
-			return new UndoableIndexChange(this, p, n, false);
-		} else {
-			return null;
+			checkExtra(p);
 		}
 	}
 
+
 	/**
-	 * Adds a extra reference to the index
-	 * @param n the extra
-	 * @param p the square
+	 * Find out if this square has extra info and add it to the index if it does
 	 */
-	public void addExtra(Integer n, Point p) {
-		List<Point> l = extras.get(n);
-		if (l == null) {
-			l = new ArrayList<Point>();
-			extras.put(n, l);
-		}
-		l.add(p);
-	}
-	
-	/**
-	 * Removes a feature/square reference from the index
-	 * @param n the extra
-	 * @param p the square
-	 */
-	public void removeExtra(Integer n, Point p) {
-		List<Point> l = extras.get(n);
-		if (l != null) {
-			l.remove(p);
+	private void checkExtra(Point p) {
+		Integer extra = model.getExtra(p);
+		if (extra != 0) {
+			List<Point> l = extras.get(extra);
+			if (l == null) {
+				l = new ArrayList<Point>();
+				extras.put(extra, l);
+			}
+			if (!l.contains(p)) {
+				l.add(p);
+			}
+		} else {
+			List<Point> l = extras.get(extra);
+			if (l != null) {
+				l.remove(p);
+				if (l.isEmpty()) {
+					extras.remove(extra);
+				}
+			}
 		}
 	}
 	
@@ -346,7 +394,7 @@ public class MapIndex {
 	 */
 	private void sortPoints() {
 		PointComparator comp = new PointComparator();
-		Iterator<List<Point>> it = index.values().iterator();
+		Iterator<List<Point>> it = features.values().iterator();
 		while (it.hasNext()) {
 			List<Point> pts = it.next();
 			Collections.sort(pts, comp);

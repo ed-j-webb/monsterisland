@@ -23,16 +23,15 @@ public class FlagDecorator implements Decorator {
 		int ox = 0;
 		int oy = size - 13;
 		Iterator<Flag> flags = DataStore.getInstance().getFlags().iterator();
-		//Iterator<Flag> flags = FeatureData.getInstance().getFlags(square[0]).iterator();
 		while (flags.hasNext()) {
-			Flag f = flags.next();
-			if (model.isFlagged(sqr, f.getId())) {
-				if (model.getExtra(sqr, f.getId()) != 0) {
-					g2d.setColor(colours[model.getExtra(sqr, f.getId())]);
+			Flag flag = flags.next();
+			if (model.isFlagged(sqr, flag)) {
+				if (model.getExtra(sqr, flag) != 0) {
+					g2d.setColor(colours[model.getExtra(sqr, flag)]);
 					g2d.fillRect(px + ox, py + oy, 13, 13);
 					g2d.setColor(Color.BLACK);
 				}
-				g2d.drawImage(f.getIcon().getImage(), px + ox, py + oy, null);
+				g2d.drawImage(flag.getIcon().getImage(), px + ox, py + oy, null);
 				ox += 13;
 				if (ox >= size) {
 					ox = 0;

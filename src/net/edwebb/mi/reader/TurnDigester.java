@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.edwebb.mi.data.Sighting;
 
-
+@Deprecated
 public class TurnDigester {
 
 	/**

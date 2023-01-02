@@ -273,17 +273,6 @@ public class SpringUtilities {
         }
     }
     
-/*
-    private static boolean isFixedHeightComponent(int row, int col, Container parent, int cols) {
-        Component c = parent.getComponent(row * cols + col);
-        if (c.getPreferredSize().height == c.getMaximumSize().height) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-*/
-    
     /**
      * Aligns the first <code>rows</code> * <code>cols</code>
      * components of <code>parent</code> in

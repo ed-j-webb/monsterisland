@@ -27,6 +27,11 @@ import javax.swing.border.TitledBorder;
 
 import net.edwebb.jim.model.FeatureComboBoxModel;
 import net.edwebb.jim.model.MapModel;
+import net.edwebb.jim.model.events.MapChangeEvent;
+import net.edwebb.jim.model.events.MapChangeListener;
+import net.edwebb.jim.model.events.MapSquareChangeEvent;
+import net.edwebb.jim.model.events.SelectedChangeEvent;
+import net.edwebb.jim.model.events.MapChangeEvent.MAP_CHANGE_TYPE;
 import net.edwebb.mi.data.Creature;
 import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Feature;
@@ -35,7 +40,7 @@ import net.edwebb.mi.data.Location;
 import net.edwebb.mi.data.Plant;
 import net.edwebb.mi.data.Terrain;
 
-public class EditPanel extends JPanel {
+public class EditPanel extends JPanel implements MapChangeListener {
 
 	/**
 	 * The version ID
@@ -57,7 +62,6 @@ public class EditPanel extends JPanel {
 	public static final Color[] colours = new Color[] {null, PRIMARY, SECONDARY};
 		
 	private MapModel model;
-	private Point current;
 
 	private JPanel editor;
 		private JComboBox<Terrain> cmbTerrain;
@@ -82,29 +86,48 @@ public class EditPanel extends JPanel {
 	private List<ActionListener> listeners = new ArrayList<ActionListener>();
 	
 	public EditPanel(MapModel model) {
-		this.model = model;
-		this.setLayout(new SpringLayout());
-		this.add(getEditor());
-		this.add(getControls());
+		setModel(model);
+		
+		setLayout(new SpringLayout());
+		add(getEditor());
+		add(getControls());
 		SpringUtilities.makeCompactGrid(this, this.getComponentCount(), 1, 5, 5, 5, 5);
 	}
 	
 	public void setModel(MapModel model) {
+		if (this.model != null) {
+			this.model.removeMapChangeListener(this);
+		}
 		this.model = model;
-		current = null;
+		this.model.addMapChangeListener(this);
 	}
 	
-	public void refresh() {
-		Point position = model.getSelected();
-		if (position != null && position.equals(current)) {
+	@Override
+	public void mapChanged(MapChangeEvent event) {
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.SELECTED)) {
+			SelectedChangeEvent selectedEvent = (SelectedChangeEvent)event;
+			if (selectedEvent.getNewSelected() != null) {
+				refresh(selectedEvent.getNewSelected());
+			}
 			return;
 		}
 		
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FEATURE)
+		 || event.getChangeType().equals(MAP_CHANGE_TYPE.TERRAIN)
+		 || event.getChangeType().equals(MAP_CHANGE_TYPE.FLAG)
+		 || event.getChangeType().equals(MAP_CHANGE_TYPE.NOTE)) {
+			MapSquareChangeEvent squareEvent = (MapSquareChangeEvent)event;
+			refresh(squareEvent.getSquare());
+			return;
+		}
+	}
+	
+	private void refresh(Point position) {
 		while (getEditor().getComponentCount() > 4) {
 			getEditor().remove(2);
 		}
 
-		if (model.getSelected() == null) {
+		if (position == null) {
 			getTitle().setTitle("(y, x)");
 			getTerrainComboBox().setSelectedItem(null);
 			getNotesBox().setText("");
@@ -118,7 +141,7 @@ public class EditPanel extends JPanel {
 				for (int i = 1; i < square.length; i++) {
 					Feature f = DataStore.getInstance().getFeatureById(square[i]);
 					if (f != null) {
-						int extra = model.getExtra(position, f.getId());
+						int extra = model.getExtra(position, f);
 						MapFeature mf = new MapFeature(f, colours[extra]);
 						for (Iterator<ActionListener> it = listeners.iterator(); it.hasNext();) {
 							mf.addActionListener(it.next());
@@ -138,10 +161,10 @@ public class EditPanel extends JPanel {
 			} else {
 				getNotesBox().setText("");
 			}
-			
 		}
 		SpringUtilities.makeCompactGrid(getEditor(), getEditor().getComponentCount(), 1, 5, 5, 5, 5);
 		this.validate();
+		this.repaint();
 	}
 	
 	private void clearFlags() {
@@ -156,14 +179,13 @@ public class EditPanel extends JPanel {
 		boolean diff = false;
 		for (int i = 0; i < getCmdFlag().length; i++) {
 			JToggleButton button = getCmdFlag()[i];
-			short id = ((Flag)button.getClientProperty(FEATURE)).getId();
-			//id = (short)(Math.pow(2, id));
-			if ((model.isFlagged(model.getSelected(), id))) {
+			Flag flag = (Flag)button.getClientProperty(FEATURE);
+			if ((model.isFlagged(model.getSelected(), flag))) {
 				button.setSelected(true);
 			} else {
 				button.setSelected(false);
 			}
-			int extra = model.getExtra(model.getSelected(), id);
+			int extra = model.getExtra(model.getSelected(), flag);
 			if (extra == 0) {
 				button.setContentAreaFilled(true);
 				button.setOpaque(false);
@@ -437,7 +459,6 @@ public class EditPanel extends JPanel {
 	
 	public void addActionListener(ActionListener l) {
 		listeners.add(l);
-		//getTerrainComboBox().addActionListener(l);
 		for(int i = 2; i < getEditor().getComponentCount() - 2; i++) {
 			((MapFeature)getEditor().getComponent(i)).addActionListener(l);
 		}
@@ -453,7 +474,6 @@ public class EditPanel extends JPanel {
 	
 	public void removeActionListener(ActionListener l) {
 		listeners.remove(l);
-		//getTerrainComboBox().removeActionListener(l);
 		for(int i = 2; i < getEditor().getComponentCount(); i++) {
 			((MapFeature)getEditor().getComponent(i)).removeActionListener(l);
 		}

@@ -9,7 +9,7 @@ import java.util.Set;
 
 import javax.swing.filechooser.FileFilter;
 
-import net.edwebb.jim.data.MapData;
+import net.edwebb.jim.model.MapData;
 
 public class FactoryManager {
 
