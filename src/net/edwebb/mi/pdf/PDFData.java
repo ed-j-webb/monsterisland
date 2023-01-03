@@ -90,6 +90,12 @@ public class PDFData {
 					
 			return sb.toString();
 		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+
 		
 	}
 }
