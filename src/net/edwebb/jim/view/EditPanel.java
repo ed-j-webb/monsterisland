@@ -117,7 +117,9 @@ public class EditPanel extends JPanel implements MapChangeListener {
 		 || event.getChangeType().equals(MAP_CHANGE_TYPE.FLAG)
 		 || event.getChangeType().equals(MAP_CHANGE_TYPE.NOTE)) {
 			MapSquareChangeEvent squareEvent = (MapSquareChangeEvent)event;
-			refresh(squareEvent.getSquare());
+			if (squareEvent.getSquare().equals(model.getSelected())) {
+				refresh(squareEvent.getSquare());
+			}
 			return;
 		}
 	}

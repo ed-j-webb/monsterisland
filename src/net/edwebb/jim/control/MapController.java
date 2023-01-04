@@ -63,6 +63,7 @@ import net.edwebb.jim.model.MapIndex;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
 import net.edwebb.jim.model.StandardMapModel;
+import net.edwebb.jim.undo.ChangeUndoManager;
 import net.edwebb.jim.view.EditPanel;
 import net.edwebb.jim.view.MiniMap;
 import net.edwebb.jim.view.ViewPanel;
@@ -166,7 +167,7 @@ public class MapController {
 		this.model = model;
 		setSearch(null);
 		buildIndex(model);
-		getUndoManager().discardAllEdits();
+		getUndoManager().setModel(model);
 		setMapLabel(model);
 		getView().setModel(model);
 		getEdit().setModel(model);
@@ -271,7 +272,7 @@ public class MapController {
 	
 	public ChangeUndoManager getUndoManager() {
 		if (undoManager == null) {
-			undoManager = new ChangeUndoManager();
+			undoManager = new ChangeUndoManager(getModel());
 		}
 		return undoManager;
 	}

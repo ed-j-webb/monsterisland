@@ -19,7 +19,7 @@ import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileFilter;
 
 import net.edwebb.jim.control.MapController;
-import net.edwebb.jim.model.UndoableCombinedChange;
+import net.edwebb.jim.undo.UndoableCombinedChange;
 import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Feature;
 import net.edwebb.mi.data.Terrain;

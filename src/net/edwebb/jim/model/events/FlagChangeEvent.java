@@ -20,7 +20,7 @@ public class FlagChangeEvent extends MapSquareChangeEvent {
 		return flag;
 	}
 
-	public boolean getState() {
+	public boolean isSet() {
 		return state;
 	}
 

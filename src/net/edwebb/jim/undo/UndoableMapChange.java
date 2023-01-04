@@ -1,6 +1,8 @@
-package net.edwebb.jim.model;
+package net.edwebb.jim.undo;
 
 import java.awt.Point;
+
+import net.edwebb.jim.model.MapModel;
 
 public abstract class UndoableMapChange extends UndoableChange {
 
@@ -19,14 +21,14 @@ public abstract class UndoableMapChange extends UndoableChange {
 			this.pos = new Point(pos);
 		}
 	}
-
-	@Override
-	public String getRedoPresentationName() {
-		return "Redo " + getPresentationName();
-	}
-
-	@Override
-	public String getUndoPresentationName() {
-		return "Undo " + getPresentationName();
+	
+	public String getPresentationName() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("(");
+		sb.append(pos.y);
+		sb.append(",");
+		sb.append(pos.x);
+		sb.append(")");
+		return sb.toString();
 	}
 }

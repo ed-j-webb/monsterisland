@@ -6,9 +6,10 @@ import java.awt.event.KeyEvent;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
 
-import net.edwebb.jim.control.ChangeUndoManager;
+import net.edwebb.jim.undo.ChangeUndoManager;
+import net.edwebb.jim.undo.UndoListener;
 
-public class UndoAction extends MapAction {
+public class UndoAction extends MapAction implements UndoListener {
 
 	/**
 	 * 
@@ -20,6 +21,7 @@ public class UndoAction extends MapAction {
 	public UndoAction(ChangeUndoManager undoManager) {
 		super(null);
 		this.undoManager = undoManager;
+		undoManager.addUndoListener(this);
         putValue(Action.NAME, "Undo");
         putValue(Action.SHORT_DESCRIPTION, "Undo change");
         putValue(Action.LONG_DESCRIPTION, "Undo a change to the map");
@@ -35,4 +37,12 @@ public class UndoAction extends MapAction {
 			undoManager.undo();
 		}
 	}
+
+	@Override
+	public void undoManagerChanged(ChangeUndoManager manager) {
+		setEnabled(manager.canUndo());
+		putValue(SHORT_DESCRIPTION, manager.getUndoPresentationName());
+	}
+	
+	
 }

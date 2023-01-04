@@ -104,7 +104,7 @@ public class MapIndex implements MapChangeListener {
 		
 		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FLAG)) {
 			FlagChangeEvent flagEvent = (FlagChangeEvent)event;
-			if (flagEvent.getState() == true) {
+			if (flagEvent.isSet()) {
 				addFeature(flagEvent.getFlag(), flagEvent.getSquare());
 			} else {
 				removeFeature(flagEvent.getFlag(), flagEvent.getSquare());

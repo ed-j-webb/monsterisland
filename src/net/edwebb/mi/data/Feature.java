@@ -61,4 +61,9 @@ public abstract class Feature {
 	 */
 	public abstract ImageIcon getIcon();
 
+	@Override
+	public String toString() {
+		return getName() + " (" + getCode() + ")";
+	}
+
 }

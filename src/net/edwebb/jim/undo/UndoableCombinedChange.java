@@ -1,4 +1,4 @@
-package net.edwebb.jim.model;
+package net.edwebb.jim.undo;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -29,7 +29,7 @@ public class UndoableCombinedChange extends UndoableChange {
 	}
 
 	public UndoableCombinedChange(String presentationName, List<? extends UndoableChange> changes) {
-		this.presentationName = presentationName;
+		//this.presentationName = presentationName;
 		undoableChanges = new ArrayList<UndoableChange>();
 		if (changes != null) {
 			undoableChanges.addAll(changes);

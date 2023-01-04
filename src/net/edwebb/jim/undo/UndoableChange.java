@@ -1,4 +1,4 @@
-package net.edwebb.jim.model;
+package net.edwebb.jim.undo;
 
 import javax.swing.undo.AbstractUndoableEdit;
 
@@ -14,25 +14,13 @@ public abstract class UndoableChange extends AbstractUndoableEdit {
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	protected String presentationName;
-
-
-	public void setPresentationName(String presentationName) {
-		this.presentationName = presentationName; 
-	}
-	
-	@Override
-	public String getPresentationName() {
-		return presentationName;
-	}
-
 	@Override
 	public String getRedoPresentationName() {
-		return "Redo " + presentationName;
+		return "Redo " + getPresentationName();
 	}
 
 	@Override
 	public String getUndoPresentationName() {
-		return "Undo " + presentationName;
+		return "Undo " + getPresentationName();
 	}
 }
