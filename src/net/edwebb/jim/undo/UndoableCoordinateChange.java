@@ -15,33 +15,23 @@ public class UndoableCoordinateChange extends UndoableMapChange {
 	
 	private Coordinate oldCoord;
 	private Coordinate newCoord;
-	private boolean current;
 	
-	public UndoableCoordinateChange(MapModel model, Coordinate oldCoord, Coordinate newCoord, boolean current) {
+	public UndoableCoordinateChange(MapModel model, Coordinate oldCoord, Coordinate newCoord) {
 		super(model, null);
 		this.oldCoord = oldCoord;
 		this.newCoord = newCoord;
-		this.current = current;
 	}
 
 	@Override
 	public void redo() throws CannotRedoException {
 		super.redo();
-		if (current) {
-			model.setCurrentCoOrdinates(newCoord);
-		} else {
-			model.setDefaultCoOrdinates(newCoord);
-		}
+		model.setDefaultCoOrdinates(newCoord);
 	}
 
 	@Override
 	public void undo() throws CannotUndoException {
 		super.undo();
-		if (current) {
-			model.setCurrentCoOrdinates(oldCoord);
-		} else {
-			model.setDefaultCoOrdinates(oldCoord);
-		}
+		model.setDefaultCoOrdinates(oldCoord);
 	}
 	
 	public String getPresentationName() {
