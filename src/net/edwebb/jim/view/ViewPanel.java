@@ -123,10 +123,11 @@ public class ViewPanel extends JPanel implements MapChangeListener {
 			if (viewEvent.getNewView() != null) {
 				getScrHorizontal().setValue(viewEvent.getNewView().x);
 				getScrVertical().setValue(-viewEvent.getNewView().y);
+				
+				// Recalculate the size of the scrollbars based on the size of the view. 
+				getScrHorizontal().setMaximum(model.getBounds().x + model.getBounds().width - model.getView().width + getScrHorizontal().getBlockIncrement() + 1);
+				getScrVertical().setMaximum(model.getBounds().height - model.getBounds().y - model.getView().height + getScrVertical().getBlockIncrement() + 1);
 
-				// TODO Don't think these are needed as they don't change after a model has been loaded
-				//getScrHorizontal().setMaximum(model.getBounds().x + model.getBounds().width - model.getView().width + getScrHorizontal().getBlockIncrement() + 1);
-				//getScrVertical().setMaximum(model.getBounds().height - model.getBounds().y - model.getView().height + getScrVertical().getBlockIncrement() + 1);
 				repaint();
 			}
 			return;
