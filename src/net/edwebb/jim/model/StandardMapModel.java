@@ -83,15 +83,13 @@ public class StandardMapModel extends AbstractMapModel {
 	@Override
 	public void setView(Rectangle rect) {
 		Rectangle oldView = view;
-		view = rect;
-		if (!oldView.equals(rect)) {
-			ViewChangeEvent event = new ViewChangeEvent(this, oldView, rect);
+		view = bound(rect);
+		if (!oldView.equals(view)) {
+			ViewChangeEvent event = new ViewChangeEvent(this, oldView, view);
 			for (MapChangeListener l : mapChangeListeners) {
 				l.mapChanged(event);
 			}
 		}
-
-		this.view = rect;
 	}
 
 	@Override
@@ -102,9 +100,9 @@ public class StandardMapModel extends AbstractMapModel {
 	@Override
 	public void setSelected(Point square) {
 		Point oldSelected = selected;
-		selected = square;
-		if (oldSelected == null || !oldSelected.equals(square)) {
-			SelectedChangeEvent event = new SelectedChangeEvent(this, oldSelected, square);
+		selected = bound(square);
+		if (oldSelected == null || !oldSelected.equals(selected)) {
+			SelectedChangeEvent event = new SelectedChangeEvent(this, oldSelected, selected);
 			for (MapChangeListener l : mapChangeListeners) {
 				l.mapChanged(event);
 			}
@@ -393,6 +391,69 @@ public class StandardMapModel extends AbstractMapModel {
 		return parent;
 	}
 
+	/**
+	 * Ensures that the point is within the bounds of the current MapModel. If either co-ordinate is beyond the bounds of the 
+	 * MapModel then the point is adjusted to the closest point within the bounds.
+	 * @param p the Point to check and adjust if necessary
+	 * @return a point that is within the bounds of the MapModel
+	 */
+	private Point bound(Point p) {
+		Rectangle bounds = getBounds();
+		int x = Math.min(Math.max(p.x, bounds.x), bounds.width + bounds.x);
+		int y = Math.max(Math.min(p.y, bounds.y), bounds.y - bounds.height);
+		if (p.x != x || p.y != y) {
+			return new Point(x, y);
+		}
+		return p;
+	}
+	
+	/**
+	 * Ensures that the rectangle is within the bounds of the current MapModel. If any side is beyond the bounds of the 
+	 * MapModel then the rectangle is adjusted to the closest rectangle within the bounds. This method does not adjust the width
+	 * and height of the rectangle only the x and y co-ordinates
+	 * @param rect the Point to check and adjust if necessary
+	 * @return a rectangle that is within the bounds of the MapModel
+	 */
+	private Rectangle bound(Rectangle rect) {
+		Rectangle bounds = getBounds();
+		int x = 0;
+		int y = 0;
+		
+		// Check not beyond top/left
+		boolean changed = false;
+		if (rect.x < bounds.x) {
+			x = bounds.x;
+			changed = true;
+		} else {
+			x = rect.x;
+		}
+		if (rect.y > bounds.y) {
+			y = bounds.y;
+			changed = true;
+		} else {
+			y = rect.y;
+		}
+		if (changed) {
+			return new Rectangle(x, y,  rect.width, rect.height);
+		}
+		
+		// Check not beyond bottom/right
+		x = (bounds.x + bounds.width) - (rect.x + rect.width) + 2;
+		y = (bounds.y - bounds.height) - (rect.y - rect.height) - 1;
+		if (x > 0) {
+			x = 0;
+		}
+		if (y < 0) {
+			y = 0;
+		}
+		if (x < 0 || y > 0) {
+			return new Rectangle(rect.x + x, rect.y + y, rect.width, rect.height);
+		}
+
+		return rect;
+	}
+	
+	
 	public String toString() {
 		return "Standard " + bounds.x + ", " + bounds.y + " " + bounds.width + "x" + bounds.height;
 	}

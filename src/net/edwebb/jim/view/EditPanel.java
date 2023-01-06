@@ -94,6 +94,10 @@ public class EditPanel extends JPanel implements MapChangeListener {
 		SpringUtilities.makeCompactGrid(this, this.getComponentCount(), 1, 5, 5, 5, 5);
 	}
 	
+	public MapModel getModel() {
+		return model;
+	}
+	
 	public void setModel(MapModel model) {
 		if (this.model != null) {
 			this.model.removeMapChangeListener(this);
@@ -101,6 +105,8 @@ public class EditPanel extends JPanel implements MapChangeListener {
 		this.model = model;
 		this.model.addMapChangeListener(this);
 	}
+	
+	
 	
 	@Override
 	public void mapChanged(MapChangeEvent event) {
@@ -110,6 +116,10 @@ public class EditPanel extends JPanel implements MapChangeListener {
 				refresh(selectedEvent.getNewSelected());
 			}
 			return;
+		}
+
+		if (event.getChangeType().equals(MAP_CHANGE_TYPE.COORDINATE)) {
+			refresh(model.getSelected());
 		}
 		
 		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FEATURE)
@@ -135,7 +145,7 @@ public class EditPanel extends JPanel implements MapChangeListener {
 			getNotesBox().setText("");
 			clearFlags();
 		} else {
-			getTitle().setTitle("(" + position.y + ", " + position.x + ")");
+			getTitle().setTitle("(" + (position.y + getModel().getOffset().y) + ", " + (position.x + getModel().getOffset().x) + ")");
 
 			short[] square = model.getSquare(position);
 			if (square != null && square.length > 0) {

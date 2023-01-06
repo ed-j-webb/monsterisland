@@ -104,14 +104,14 @@ public class MapRuler extends JPanel {
 			t = this.getWidth() - 16;
 			sqr = model.getView().x + off;
 			lst = model.getView().x + model.getView().width + 1 + off;
-			lst = Math.min(lst, model.getBounds().x + model.getBounds().width + 1);
+			lst = Math.min(lst, model.getBounds().x + model.getBounds().width + 1 + off);
 		} else {
 			x = this.getWidth() - 2;
 			t = this.getHeight();
 			off = model.getOffset().y;
 			sqr = model.getView().y + off;
 			lst = model.getView().y - model.getView().height - 1 + off;
-			lst = Math.max(lst,  model.getBounds().y - model.getBounds().height - 1);
+			lst = Math.max(lst,  model.getBounds().y - model.getBounds().height - 1 - off);
 		}
 		while (p < t && sqr != lst) {
 			String str = Integer.toString(sqr);

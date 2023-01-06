@@ -41,7 +41,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.border.BevelBorder;
 
 import net.edwebb.jim.control.actions.CompareAction;
-import net.edwebb.jim.control.actions.CoordAction;
 import net.edwebb.jim.control.actions.FindAction;
 import net.edwebb.jim.control.actions.FlagAction;
 import net.edwebb.jim.control.actions.NewAction;
@@ -64,10 +63,10 @@ import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
 import net.edwebb.jim.model.StandardMapModel;
 import net.edwebb.jim.undo.ChangeUndoManager;
+import net.edwebb.jim.view.CoordinatePanel;
 import net.edwebb.jim.view.EditPanel;
 import net.edwebb.jim.view.MiniMap;
 import net.edwebb.jim.view.ViewPanel;
-import net.edwebb.mi.data.Coordinate;
 import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Feature;
 import net.edwebb.mi.data.Flag;
@@ -115,8 +114,7 @@ public class MapController {
 		private UndoAction undoAction;
 		private RedoAction redoAction;
 		private JComboBox<Integer> cmbSize;
-		private JComboBox<Coordinate> cmbCoords;
-		private CoordAction coordAction;
+		private CoordinatePanel panCoordinates;
 		//private DiffAction diffAction;
 		private CompareAction compAction;
 		private SaveDifferencesAction saveDifferencesAction;
@@ -172,8 +170,7 @@ public class MapController {
 		getView().setModel(model);
 		getEdit().setModel(model);
 		getMiniMap().setModel(model);
-		addCoOrdinates(getCmbCoords(), model);
-		getCmbCoords().setSelectedItem(model.getCurrentCoOrdinates());
+		getCoordinatePanel().setModel(model);
 		if (getFrame().isVisible()) {
 			resize(getView().getDimension());
 		}
@@ -213,24 +210,6 @@ public class MapController {
 	
 	public void setStatusLabel(String text) {
 		getStatusLabel().setText(text);
-	}
-	
-	/**
-	 * Adds the model's coOrdinate system to the combobox if it is not already present
-	 * 
-	 * @param cmbBox the Co-ordinates combo box
-	 * @param model the map model
-	 */
-	private void addCoOrdinates(JComboBox<Coordinate> cmbBox, MapModel model) {
-		if (model.getDefaultCoOrdinates() == null || model.getDefaultCoOrdinates().getOffset().equals(new Point(0,0))) {
-			return;
-		}
-		for (int i = 0; i < cmbBox.getItemCount(); i++) {
-			if (cmbBox.getItemAt(i) == model.getDefaultCoOrdinates()) {
-				return;
-			}
-		}
-		cmbBox.addItem(model.getDefaultCoOrdinates());
 	}
 	
 	/**
@@ -360,7 +339,7 @@ public class MapController {
 					} else {
 						rect = new Rectangle(rect.x, -e.getValue(), rect.width, rect.height);
 					}
-					getModel().setView(bound(rect));
+					getModel().setView(rect);
 				}
 			};
 		}
@@ -435,8 +414,8 @@ public class MapController {
 						}
 					}
 					if (scroll == true) {
-						getModel().setView(bound(rect));
-						getModel().setSelected(bound(sel));
+						getModel().setView(rect);
+						getModel().setSelected(sel);
 					}
 				}
 			};
@@ -446,13 +425,10 @@ public class MapController {
 
 	private void paintFlag(Point p, Flag f, boolean on) {
 		Point s = new Point(p);
-		Point r = new Point(s); 
 		for (short x = (short)(p.x - f.getRange() + 1); x < p.x + f.getRange(); x++) {
 			for (short y = (short)(p.y + f.getRange() -1); y > p.y - f.getRange(); y--) {
 				s.move(x, y);
-				r = bound(s);
-				// Only set the flag if s and t are the same (i.e. s is not off the edge of the map)
-				if (s.equals(r)) {
+				if (getModel().isWithin(s)) {
 					getModel().toggleFlag(s, f, on ? MapModel.ON : MapModel.OFF);
 				}
 			}
@@ -472,8 +448,8 @@ public class MapController {
 					Rectangle rect = getModel().getView();
 					Point p = new Point(rect.x + (e.getPoint().x / (getModel().getSize() + 1)), rect.y - (e.getPoint().y / (getModel().getSize() + 1)));
 					e.getComponent().requestFocusInWindow();
-					getModel().setView(bound(rect));
-					getModel().setSelected(bound(p));
+					getModel().setView(rect);
+					getModel().setSelected(p);
 				}
 
 				@Override
@@ -631,6 +607,7 @@ public class MapController {
 					Rectangle bounds = getModel().getBounds();
 					Rectangle view = getModel().getView();
 					Point p = new Point(e.getPoint());
+					if (p.x > bounds.x -view.width / 2 )
 					p.translate(-view.width / 2 + bounds.x, -view.height/2);
 					p.move(p.x, bounds.y - p.y);
 					getModel().setView(new Rectangle(p.x, p.y, view.width, view.height));
@@ -660,8 +637,7 @@ public class MapController {
 			toolBar.add(getCmbSize());
 			toolBar.add(getCmdFlag());
 			toolBar.add(new JToolBar.Separator());
-			toolBar.add(getCmbCoords());
-			toolBar.add(getCoordAction());
+			toolBar.add(getCoordinatePanel());
 			toolBar.add(new JToolBar.Separator());
 			//toolBar.add(getScryeAction());
 			toolBar.add(getExtractAction());
@@ -753,17 +729,6 @@ public class MapController {
 		return findAction;
 	}
 	
-	/**
-	 * Returns the Set Co-ordinates action
-	 * @return the Set Co-ordinates action
-	 */
-	public CoordAction getCoordAction() {
-		if (coordAction == null) {
-			coordAction = new CoordAction(this, this.getCmbCoords());
-		}
-		return coordAction;
-	}
-	
 //	/**
 //	 * Returns the Diff action
 //	 * @return the Diff action
@@ -846,6 +811,13 @@ public class MapController {
 		return cmdFlag;
 	}
 	
+	private CoordinatePanel getCoordinatePanel() {
+		if (panCoordinates == null) {
+			panCoordinates = new CoordinatePanel(this);
+		}
+		return panCoordinates;
+	}
+	
 	private JPanel getStatusBar() {
 		if (panStatus == null) {
 			panStatus = new JPanel();
@@ -920,105 +892,6 @@ public class MapController {
 		return cmbSize;
 	}
 
-	/**
-	 * Returns the Co-ordinate offset combo box
-	 * @return the Co-ordinate offset combo box
-	 */
-	private JComboBox<Coordinate> getCmbCoords() {
-		if (cmbCoords == null) {
-			cmbCoords = new JComboBox<Coordinate>(DataStore.getInstance().getCoordinates().toArray(new Coordinate[DataStore.getInstance().getCoordinates().size()]));
-			cmbCoords.setSelectedItem(MEDIUM_SQUARE);
-			cmbCoords.addItemListener(new ItemListener() {
-				
-				@Override
-				public void itemStateChanged(ItemEvent e) {
-					getModel().setCurrentCoOrdinates((Coordinate)e.getItem());
-				}
-			});
-			cmbCoords.setRenderer(new DefaultListCellRenderer() {
-				/**
-				 * 
-				 */
-				private static final long serialVersionUID = 1L;
-
-				@Override
-				public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-					JLabel l =  (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-					Coordinate c = (Coordinate)value;
-					if (c != null) {
-						if (c.equals(getModel().getDefaultCoOrdinates())) {
-							l.setText(l.getText() + " *");
-						}
-					}
-
-					return l;
-				}
-			});
-		}
-		return cmbCoords;
-	}
-	
-	/**
-	 * Ensures that the point is within the bounds of the current MapModel. If either co-ordinate is beyond the bounds of the 
-	 * MapModel then the point is adjusted to the closest point within the bounds.
-	 * @param p the Point to check and adjust if necessary
-	 * @return a point that is within the bounds of the MapModel
-	 */
-	private Point bound(Point p) {
-		Rectangle bounds = getModel().getBounds();
-		int x = Math.min(Math.max(p.x, bounds.x), bounds.width + bounds.x);
-		int y = Math.max(Math.min(p.y, bounds.y), bounds.y - bounds.height);
-		if (p.x != x || p.y != y) {
-			return new Point(x, y);
-		}
-		return p;
-	}
-	
-	/**
-	 * Ensures that the rectangle is within the bounds of the current MapModel. If any side is beyond the bounds of the 
-	 * MapModel then the rectangle is adjusted to the closest rectangle within the bounds. This method does not adjust the width
-	 * and height of the rectangle only the x and y co-ordinates
-	 * @param rect the Point to check and adjust if necessary
-	 * @return a rectangle that is within the bounds of the MapModel
-	 */
-	private Rectangle bound(Rectangle rect) {
-		Rectangle bounds = getModel().getBounds();
-		int x = 0;
-		int y = 0;
-		
-		// Check not beyond top/left
-		boolean changed = false;
-		if (rect.x < bounds.x) {
-			x = bounds.x;
-			changed = true;
-		} else {
-			x = rect.x;
-		}
-		if (rect.y > bounds.y) {
-			y = bounds.y;
-			changed = true;
-		} else {
-			y = rect.y;
-		}
-		if (changed) {
-			return new Rectangle(x, y,  rect.width, rect.height);
-		}
-		
-		// Check not beyond bottom/right
-		x = (bounds.x + bounds.width) - (rect.x + rect.width) + 2;
-		y = (bounds.y - bounds.height) - (rect.y - rect.height) - 1;
-		if (x > 0) {
-			x = 0;
-		}
-		if (y < 0) {
-			y = 0;
-		}
-		if (x < 0 || y > 0) {
-			return new Rectangle(rect.x + x, rect.y + y, rect.width, rect.height);
-		}
-
-		return rect;
-	}
 	
 	/**
 	 * Resizes the MapModel's view based on the dimensions of the MapPanel component
@@ -1031,7 +904,7 @@ public class MapController {
 		if (chk < 0) {
 			rect = new Rectangle(rect.x + chk, rect.y, rect.width, rect.height);
 		}
-		getModel().setView(bound(rect));
+		getModel().setView(rect);
 	}
 	
 	public static void main (String[] args) throws IOException {

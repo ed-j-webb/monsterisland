@@ -132,8 +132,10 @@ public class ChangeUndoManager extends UndoManager implements MapChangeListener 
 
 		if (event.getChangeType().equals(MAP_CHANGE_TYPE.COORDINATE)) {
 			CoordinateChangeEvent coordEvent = (CoordinateChangeEvent)event;
-			UndoableCoordinateChange change = new UndoableCoordinateChange(event.getModel(), coordEvent.getOldCoord(), coordEvent.getNewCoord(), coordEvent.isDefaultCoord());
-			this.addEdit(change);
+			if (coordEvent.isDefaultCoord()) {
+				UndoableCoordinateChange change = new UndoableCoordinateChange(event.getModel(), coordEvent.getOldCoord(), coordEvent.getNewCoord());
+				this.addEdit(change);
+			}
 		}
 
 		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FLAG)) {
