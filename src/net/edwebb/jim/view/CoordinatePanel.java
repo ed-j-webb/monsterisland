@@ -60,10 +60,12 @@ public class CoordinatePanel extends JToolBar implements MapChangeListener {
 		model.addMapChangeListener(this);
 		JComboBox<Coordinate> cmbBox = getCmbCoords();
 		if (model.getDefaultCoOrdinates() == null || model.getDefaultCoOrdinates().getOffset().equals(new Point(0,0))) {
+			cmbBox.setSelectedIndex(0);
 			return;
 		}
 		for (int i = 0; i < cmbBox.getItemCount(); i++) {
-			if (cmbBox.getItemAt(i) == model.getDefaultCoOrdinates()) {
+			if (cmbBox.getItemAt(i).equals(model.getDefaultCoOrdinates())) {
+				cmbBox.setSelectedIndex(i);
 				return;
 			}
 		}
