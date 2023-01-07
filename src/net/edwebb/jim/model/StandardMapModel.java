@@ -39,9 +39,9 @@ public class StandardMapModel extends AbstractMapModel {
 	public StandardMapModel(int size, MapData data, String name) {
 		this.name = name;
 		this.size = size;
-		this.data = data;
-		this.currentCoord = new Coordinate(new Point(data.getOffX(), data.getOffY()), name);
-		this.defaultCoord = new Coordinate(new Point(data.getOffX(), data.getOffY()), name);
+		this.data = data;	
+		this.currentCoord = new Coordinate(new Point(data.getOffX(), data.getOffY()), data.getOffset());
+		this.defaultCoord = new Coordinate(new Point(data.getOffX(), data.getOffY()), data.getOffset());
 		bounds = new Rectangle(data.getLeft(), data.getTop(), data.getWidth(), data.getHeight());
 	}
 
@@ -347,6 +347,9 @@ public class StandardMapModel extends AbstractMapModel {
 		this.defaultCoord = coord;
 		if (oldCoord != null && !oldCoord.getOffset().equals(new Point(0,0))) {
 			updateOffset();
+		}
+		if (coord != null) {
+			data.setOffset(coord.getOffset().x, coord.getOffset().y, coord.getName());
 		}
 
 		CoordinateChangeEvent event = new CoordinateChangeEvent(this, oldCoord, coord, true);
