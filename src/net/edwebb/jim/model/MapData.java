@@ -148,6 +148,8 @@ public class MapData {
 
 	public void setOffset(int x, int y, String offset) {
 		this.offset = offset;
+		this.offx = x;
+		this.offy = y;
 		dirty = true;
 	}
 
