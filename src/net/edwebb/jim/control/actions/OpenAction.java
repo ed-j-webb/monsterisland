@@ -37,7 +37,7 @@ public class OpenAction extends MapAction {
         putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_O));
 	}
 	
-	private JFileChooser getLoadFileChooser() {
+	protected JFileChooser getLoadFileChooser() {
 		if (load == null) {
 			load = new JFileChooser();
 			load.setAcceptAllFileFilterUsed(false);
@@ -59,7 +59,7 @@ public class OpenAction extends MapAction {
 				md = FactoryManager.getInstance().createFrom(fc.getSelectedFile());
 				MapModel m = new StandardMapModel(getController().getModel().getSize(), md, fc.getSelectedFile().getName());
 				getController().setModel(m);
-				//getController().getMiniMap().revalidate();
+				getController().getSaveAction().getSaveFileChooser().setSelectedFile(fc.getSelectedFile());
 				if (FactoryManager.getInstance().getUnmatched().size() > 0) {
 					StringBuilder sb = new StringBuilder();
 					sb.append("There were some features that were not recognised:\n");

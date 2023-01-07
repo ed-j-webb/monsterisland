@@ -62,6 +62,7 @@ public class SaveAction extends MapAction {
 				FactoryManager.getInstance().saveTo(getController().getModel().getData(), file);
 				getController().getModel().setName(file.getName());
 				getController().setMapLabel(getController().getModel());
+				getController().getOpenAction().getLoadFileChooser().setSelectedFile(file);
 			} catch (Exception e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(getController().getFrame(), "Cannot save map to " + file.getAbsolutePath());
