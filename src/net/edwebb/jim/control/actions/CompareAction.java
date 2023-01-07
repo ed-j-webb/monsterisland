@@ -1,5 +1,6 @@
 package net.edwebb.jim.control.actions;
 
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -44,6 +45,15 @@ public class CompareAction extends MapAction {
 	
 	@Override
 	public void actionPerformed(ActionEvent evt) {
+		MapModel primary = getController().getModel();
+		if (primary.isDirty()) {
+			JOptionPane.showMessageDialog(getController().getFrame(), "You must save your map before comparing");
+			return;
+		}
+		if (primary.getDefaultCoOrdinates() == null || primary.getDefaultCoOrdinates().getOffset().equals(new Point(0,0))) {
+			JOptionPane.showMessageDialog(getController().getFrame(), "You must set default co-ordinates for the current map before it can be compared to another");
+			return;
+		}
 		JFileChooser fc = new JFileChooser();
 		fc.setAcceptAllFileFilterUsed(false);
 		clearFilters(fc);
@@ -56,19 +66,16 @@ public class CompareAction extends MapAction {
 			MapData smd;
 			try {
 				smd = FactoryManager.getInstance().createFrom(fc.getSelectedFile());
-				MapModel primary = getController().getModel();
-				if (primary.isDirty()) {
-					JOptionPane.showMessageDialog(getController().getFrame(), "You must save your map before comparing");
-					return;
-				}
 
 				MapModel secondary = new StandardMapModel(primary.getSize(), smd, fc.getSelectedFile().getName());
+				if (secondary.getDefaultCoOrdinates() == null || secondary.getDefaultCoOrdinates().getOffset().equals(new Point(0,0))) {
+					JOptionPane.showMessageDialog(getController().getFrame(), "The map you want to compare must have default co-ordinates set before it can be compared to another");
+					return;
+				}
 
 				MapModel m = new DiffMapModel(primary, secondary);
 				
 				getController().setModel(m);
-				//refresh();
-				//getMiniMap().revalidate();
 			} catch (IOException e) {
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(getController().getFrame(), "Cannot load map from " + fc.getSelectedFile().getAbsolutePath());
