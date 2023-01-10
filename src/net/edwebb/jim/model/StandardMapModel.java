@@ -6,7 +6,6 @@ import java.awt.Rectangle;
 import net.edwebb.jim.model.events.CoordinateChangeEvent;
 import net.edwebb.jim.model.events.FeatureChangeEvent;
 import net.edwebb.jim.model.events.FlagChangeEvent;
-import net.edwebb.jim.model.events.MapChangeListener;
 import net.edwebb.jim.model.events.NoteChangeEvent;
 import net.edwebb.jim.model.events.SelectedChangeEvent;
 import net.edwebb.jim.model.events.TerrainChangeEvent;
@@ -23,8 +22,6 @@ public class StandardMapModel extends AbstractMapModel {
 	private String name;
 
 	private MapData data;
-	
-	private MapModel parent;
 	
 	private int size = 52;
 	
@@ -85,10 +82,7 @@ public class StandardMapModel extends AbstractMapModel {
 		Rectangle oldView = view;
 		view = bound(rect);
 		if (!oldView.equals(view)) {
-			ViewChangeEvent event = new ViewChangeEvent(this, oldView, view);
-			for (MapChangeListener l : mapChangeListeners) {
-				l.mapChanged(event);
-			}
+			sendEvent(new ViewChangeEvent(this, oldView, view));
 		}
 	}
 
@@ -102,10 +96,7 @@ public class StandardMapModel extends AbstractMapModel {
 		Point oldSelected = selected;
 		selected = bound(square);
 		if (oldSelected == null || !oldSelected.equals(selected)) {
-			SelectedChangeEvent event = new SelectedChangeEvent(this, oldSelected, selected);
-			for (MapChangeListener l : mapChangeListeners) {
-				l.mapChanged(event);
-			}
+			sendEvent(new SelectedChangeEvent(this, oldSelected, selected));
 		}
 	}
 
@@ -171,13 +162,7 @@ public class StandardMapModel extends AbstractMapModel {
 			setSquare(square, null);
 		}
 
-		TerrainChangeEvent event = new TerrainChangeEvent(this, square, DataStore.getInstance().getTerrain(oldid), terrain);
-		if (parent != null) {
-			parent.recieveMapChangeEvent(event);
-		}
-		for (MapChangeListener l : mapChangeListeners) {
-			l.mapChanged(event);
-		}
+		sendEvent(new TerrainChangeEvent(this, square, DataStore.getInstance().getTerrain(oldid), terrain));
 	}
 
 	@Override
@@ -201,13 +186,7 @@ public class StandardMapModel extends AbstractMapModel {
 			return;
 		}
 		
-		FlagChangeEvent event = new FlagChangeEvent(this, square, flag, true); // TODO work out the state
-		if (parent != null) {
-			parent.recieveMapChangeEvent(event);
-		}
-		for (MapChangeListener l : mapChangeListeners) {
-			l.mapChanged(event);
-		}
+		sendEvent(new FlagChangeEvent(this, square, flag, true)); // TODO work out the state
 	}
 
 	@Override
@@ -237,13 +216,8 @@ public class StandardMapModel extends AbstractMapModel {
 		} else {
 			setSquare(square, newSqr);
 		}
-		FeatureChangeEvent event = new FeatureChangeEvent(this, square, feature, false);
-		if (parent != null) {
-			parent.recieveMapChangeEvent(event);
-		}
-		for (MapChangeListener l : mapChangeListeners) {
-			l.mapChanged(event);
-		}
+
+		sendEvent(new FeatureChangeEvent(this, square, feature, false));
 	}
 
 	@Override
@@ -264,13 +238,7 @@ public class StandardMapModel extends AbstractMapModel {
 		newSqr[i] = feature.getId();
 		setSquare(square, newSqr);
 		
-		FeatureChangeEvent event = new FeatureChangeEvent(this, square, feature, true);
-		if (parent != null) {
-			parent.recieveMapChangeEvent(event);
-		}
-		for (MapChangeListener l : mapChangeListeners) {
-			l.mapChanged(event);
-		}
+		sendEvent(new FeatureChangeEvent(this, square, feature, true));
 	}
 	
 	@Override
@@ -304,13 +272,7 @@ public class StandardMapModel extends AbstractMapModel {
 		
 		data.setSquareNotes(square.x - bounds.x, bounds.y - square.y, note);
 		
-		NoteChangeEvent event = new NoteChangeEvent(this, square, oldNote, note);
-		if (parent != null) {
-			parent.recieveMapChangeEvent(event);
-		}
-		for (MapChangeListener l : mapChangeListeners) {
-			l.mapChanged(event);
-		}
+		sendEvent(new NoteChangeEvent(this, square, oldNote, note));
 	}
 
 	@Override
@@ -324,13 +286,7 @@ public class StandardMapModel extends AbstractMapModel {
 			updateOffset();
 		}
 
-		CoordinateChangeEvent event = new CoordinateChangeEvent(this, oldCoord, coord, false);
-		if (parent != null) {
-			parent.recieveMapChangeEvent(event);
-		}
-		for (MapChangeListener l : mapChangeListeners) {
-			l.mapChanged(event);
-		}
+		sendEvent(new CoordinateChangeEvent(this, oldCoord, coord, false));
 	}
 
 	@Override
@@ -352,13 +308,7 @@ public class StandardMapModel extends AbstractMapModel {
 			data.setOffset(coord.getOffset().x, coord.getOffset().y, coord.getName());
 		}
 
-		CoordinateChangeEvent event = new CoordinateChangeEvent(this, oldCoord, coord, true);
-		if (parent != null) {
-			parent.recieveMapChangeEvent(event);
-		}
-		for (MapChangeListener l : mapChangeListeners) {
-			l.mapChanged(event);
-		}
+		sendEvent(new CoordinateChangeEvent(this, oldCoord, coord, true));
 	}
 
 	@Override
@@ -384,79 +334,6 @@ public class StandardMapModel extends AbstractMapModel {
 		return data.isDirty();
 	}
 
-	@Override
-	public void setParent(MapModel model) {
-		this.parent = model;
-	}
-
-	@Override
-	public MapModel getParent() {
-		return parent;
-	}
-
-	/**
-	 * Ensures that the point is within the bounds of the current MapModel. If either co-ordinate is beyond the bounds of the 
-	 * MapModel then the point is adjusted to the closest point within the bounds.
-	 * @param p the Point to check and adjust if necessary
-	 * @return a point that is within the bounds of the MapModel
-	 */
-	private Point bound(Point p) {
-		Rectangle bounds = getBounds();
-		int x = Math.min(Math.max(p.x, bounds.x), bounds.width + bounds.x);
-		int y = Math.max(Math.min(p.y, bounds.y), bounds.y - bounds.height);
-		if (p.x != x || p.y != y) {
-			return new Point(x, y);
-		}
-		return p;
-	}
-	
-	/**
-	 * Ensures that the rectangle is within the bounds of the current MapModel. If any side is beyond the bounds of the 
-	 * MapModel then the rectangle is adjusted to the closest rectangle within the bounds. This method does not adjust the width
-	 * and height of the rectangle only the x and y co-ordinates
-	 * @param rect the Point to check and adjust if necessary
-	 * @return a rectangle that is within the bounds of the MapModel
-	 */
-	private Rectangle bound(Rectangle rect) {
-		Rectangle bounds = getBounds();
-		int x = 0;
-		int y = 0;
-		
-		// Check not beyond top/left
-		boolean changed = false;
-		if (rect.x < bounds.x) {
-			x = bounds.x;
-			changed = true;
-		} else {
-			x = rect.x;
-		}
-		if (rect.y > bounds.y) {
-			y = bounds.y;
-			changed = true;
-		} else {
-			y = rect.y;
-		}
-		if (changed) {
-			return new Rectangle(x, y,  rect.width, rect.height);
-		}
-		
-		// Check not beyond bottom/right
-		x = (bounds.x + bounds.width) - (rect.x + rect.width) + 2;
-		y = (bounds.y - bounds.height) - (rect.y - rect.height) - 1;
-		if (x > 0) {
-			x = 0;
-		}
-		if (y < 0) {
-			y = 0;
-		}
-		if (x < 0 || y > 0) {
-			return new Rectangle(rect.x + x, rect.y + y, rect.width, rect.height);
-		}
-
-		return rect;
-	}
-	
-	
 	public String toString() {
 		return "Standard " + bounds.x + ", " + bounds.y + " " + bounds.width + "x" + bounds.height;
 	}

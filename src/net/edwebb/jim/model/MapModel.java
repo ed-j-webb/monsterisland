@@ -64,6 +64,8 @@ public interface MapModel {
 	
 	public boolean isDirty();
 	
+	public boolean isBusy();
+	
 	public int getExtra(Point square, Feature feature);
 	public int getExtra(Point square, Flag flag);
 	public int getExtra(Point square);
@@ -75,4 +77,5 @@ public interface MapModel {
 	public void setParent(MapModel model);
 	public MapModel getParent();
 	public void recieveMapChangeEvent(MapChangeEvent event);
+	
 }

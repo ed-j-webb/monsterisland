@@ -527,6 +527,9 @@ public class MapController {
 				
 				@Override
 				public void itemStateChanged(ItemEvent e) {
+					if (getModel().isBusy()) {
+						return;
+					}
 					if (e.getStateChange() == ItemEvent.SELECTED) {
 						Point pos = getModel().getSelected();
 						Terrain t = (Terrain)e.getItem();

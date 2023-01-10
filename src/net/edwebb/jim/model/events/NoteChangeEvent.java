@@ -1,6 +1,7 @@
 package net.edwebb.jim.model.events;
 
 import java.awt.Point;
+import java.util.List;
 
 import net.edwebb.jim.model.MapModel;
 
@@ -10,7 +11,11 @@ public class NoteChangeEvent extends MapSquareChangeEvent {
 	private String newNote;
 	
 	public NoteChangeEvent(MapModel model, Point square, String oldNote, String newNote) {
-		super(model, MAP_CHANGE_TYPE.NOTE, square);
+		this(model, square, oldNote, newNote, null);
+	}
+	
+	public NoteChangeEvent(MapModel model, Point square, String oldNote, String newNote, List<MapChangeEvent>subEvents) {
+		super(model, MAP_CHANGE_TYPE.NOTE, square, subEvents);
 		this.oldNote = oldNote;
 		this.newNote = newNote;
 	}

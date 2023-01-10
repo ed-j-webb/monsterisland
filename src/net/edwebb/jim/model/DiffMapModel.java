@@ -11,7 +11,9 @@ import net.edwebb.jim.model.events.FeatureChangeEvent;
 import net.edwebb.jim.model.events.FlagChangeEvent;
 import net.edwebb.jim.model.events.MapChangeEvent;
 import net.edwebb.jim.model.events.NoteChangeEvent;
+import net.edwebb.jim.model.events.SelectedChangeEvent;
 import net.edwebb.jim.model.events.TerrainChangeEvent;
+import net.edwebb.jim.model.events.ViewChangeEvent;
 import net.edwebb.mi.data.Coordinate;
 import net.edwebb.mi.data.Feature;
 import net.edwebb.mi.data.Flag;
@@ -35,11 +37,15 @@ public class DiffMapModel extends AbstractMapModel {
 	private Rectangle view = new Rectangle(0, 0, 30, 20);
 	private Point selected = new Point(0, 0);
 
+	private Point offset = new Point(0, 0);
+	
 	protected List<TerrainChangeEvent> terrainEvents = new ArrayList<TerrainChangeEvent>();
 	protected List<FeatureChangeEvent> featureEvents = new ArrayList<FeatureChangeEvent>();
 	protected List<FlagChangeEvent> flagEvents = new ArrayList<FlagChangeEvent>();
 	protected List<NoteChangeEvent> noteEvents = new ArrayList<NoteChangeEvent>();
 	protected List<CoordinateChangeEvent> coordEvents = new ArrayList<CoordinateChangeEvent>();
+	
+	protected List<MapChangeEvent> subEvents = new ArrayList<MapChangeEvent>();
 	
 	public DiffMapModel(MapModel primary, MapModel secondary) {
 		if (primary == null || secondary == null) {
@@ -48,7 +54,8 @@ public class DiffMapModel extends AbstractMapModel {
 		this.primary = primary;
 		primary.setParent(this);
 		this.secondary = secondary;
-		secondary.setDefaultCoOrdinates(primary.getDefaultCoOrdinates());
+		this.offset = primary.getDefaultCoOrdinates().getOffset(secondary.getDefaultCoOrdinates()); 
+		//secondary.setDefaultCoOrdinates(primary.getDefaultCoOrdinates());
 		secondary.setParent(this);
 		
 		Point topLeft = new Point(Math.min(primary.getBounds().x, secondary.getBounds().y), Math.max(primary.getBounds().y, secondary.getBounds().y));
@@ -150,7 +157,11 @@ public class DiffMapModel extends AbstractMapModel {
 
 	@Override
 	public void setView(Rectangle rect) {
-		this.view = rect;
+		Rectangle oldView = view;
+		view = bound(rect);
+		if (!oldView.equals(view)) {
+			sendEvent(new ViewChangeEvent(this, oldView, view));
+		}
 	}
 
 	@Override
@@ -160,7 +171,11 @@ public class DiffMapModel extends AbstractMapModel {
 
 	@Override
 	public void setSelected(Point square) {
-		this.selected = square;
+		Point oldSelected = selected;
+		selected = bound(square);
+		if (oldSelected == null || !oldSelected.equals(selected)) {
+			sendEvent(new SelectedChangeEvent(this, oldSelected, selected));
+		}
 	}
 
 	@Override
@@ -181,10 +196,16 @@ public class DiffMapModel extends AbstractMapModel {
 		return bounds.contains(square);
 	}
 	
+	private Point offset(Point square) {
+		Point pt = new Point(square);
+		pt.translate(offset.x, offset.y);
+		return pt;
+	}
+	
 	@Override
 	public short[] getSquare(Point square) {
 		short[] p = primary.getSquare(square);
-		short[] s = secondary.getSquare(square);
+		short[] s = secondary.getSquare(offset(square));
 		
 		if ((p == null || p.length == 0) && (s == null || s.length == 0)) {
 			return null;
@@ -243,10 +264,10 @@ public class DiffMapModel extends AbstractMapModel {
 	@Override
 	public String getSquareNote(Point square) {
 		String p = primary.getSquareNote(square);
-		String s = secondary.getSquareNote(square);
+		String s = secondary.getSquareNote(offset(square));
 		
-		if (p == null) {
-			return s;
+		if (p == null && s != null) {
+			return "{{" + s + "}}";
 		}
 		if (s == null) {
 			return p;
@@ -255,71 +276,83 @@ public class DiffMapModel extends AbstractMapModel {
 		if (p.equals(s)) {
 			return p;
 		} else {
-			return p + "\n" + s;
+			return p + "\n{{" + s + "}}";
 		}
 	}
 
 	
 	@Override
 	public void setTerrain(Point square, Terrain terrain) {
+		subEvents.clear();
 		primary.setTerrain(square, terrain);
-		secondary.setTerrain(square, terrain);
+		secondary.setTerrain(offset(square), terrain);
+		sendEvent(new TerrainChangeEvent(this, square, null, terrain, subEvents));
 	}
 	
 	@Override
 	public boolean isFlagged(Point square, Flag flag) {
 		boolean p = primary.isFlagged(square, flag);
-		boolean s = secondary.isFlagged(square, flag);
+		boolean s = secondary.isFlagged(offset(square), flag);
 		return p || s;
 	}
 
 	@Override
 	public void toggleFlag(Point square, Flag flag, int state) {
+		subEvents.clear();
 		if (state == INVERSE) {
-			if (primary.isFlagged(square, flag) || secondary.isFlagged(square, flag)) {
+			if (primary.isFlagged(square, flag) || secondary.isFlagged(offset(square), flag)) {
 				toggleFlag(square, flag, OFF);
 			} else {
 				toggleFlag(square, flag, ON);
 			}
 		} else {
 			primary.toggleFlag(square, flag, state);
-			secondary.toggleFlag(square, flag, state);
+			secondary.toggleFlag(offset(square), flag, state);
 		}
+		sendEvent(new FlagChangeEvent(this, square, flag, true, subEvents)); // TODO work out the state
 	}
 
 	@Override
 	public void remove(Point square, Feature feature) {
+		subEvents.clear();
 		primary.remove(square, feature);
-		secondary.remove(square, feature);
+		secondary.remove(offset(square), feature);
+		sendEvent(new FeatureChangeEvent(this, square, feature, false, subEvents));
 	}
 
 	@Override
 	public void add(Point square, Feature feature) {
+		subEvents.clear();
 		if (primary.isWithin(square)) {
 			primary.add(square, feature);
 		}
-		if (secondary.isWithin(square)) {
-			secondary.add(square, feature);
+		if (secondary.isWithin(offset(square))) {
+			secondary.add(offset(square), feature);
 		}
+		sendEvent(new FeatureChangeEvent(this, square, feature, true, subEvents));
 	}
 
 	@Override
 	public boolean contains(Point square, Feature feature) {
 		boolean p = primary.contains(square, feature);
-		boolean s = secondary.contains(square, feature);
+		boolean s = secondary.contains(offset(square), feature);
 		return p || s;
 	}
 
 	@Override
 	public void setSquareNote(Point square, String note) {
+		subEvents.clear();
 		primary.setSquareNote(square, note);
-		secondary.setSquareNote(square, note);
+		secondary.setSquareNote(offset(square), note);
+		sendEvent(new NoteChangeEvent(this, square, null, note, subEvents));
 	}
 
 	@Override
 	public void setDefaultCoOrdinates(Coordinate coord) {
+		subEvents.clear();
 		primary.setDefaultCoOrdinates(coord);
 		secondary.setDefaultCoOrdinates(coord);
+		sendEvent(new CoordinateChangeEvent(this, null, coord, true, subEvents));
 	}
 
 	@Override
@@ -329,8 +362,10 @@ public class DiffMapModel extends AbstractMapModel {
 
 	@Override
 	public void setCurrentCoOrdinates(Coordinate coord) {
+		subEvents.clear();
 		primary.setCurrentCoOrdinates(coord);
 		secondary.setCurrentCoOrdinates(coord);
+		sendEvent(new CoordinateChangeEvent(this, null, coord, false, subEvents));
 	}
 
 	@Override
@@ -351,11 +386,11 @@ public class DiffMapModel extends AbstractMapModel {
 	@Override
 	public int getExtra(Point square, Flag id) {
 		boolean p = primary.isFlagged(square, id);
-		boolean s = secondary.isFlagged(square, id);
+		boolean s = secondary.isFlagged(offset(square), id);
 		if ((p && s) || (!p && !s)) {
 			return FEATURE_ONE_OR_MATCH;
 		} else if (p) {
-			if (isEmpty(secondary, square)) {
+			if (isEmpty(secondary, offset(square))) {
 				return FEATURE_ONE_OR_MATCH;
 			} else {
 				return FEATURE_PRIMARY_ONLY;
@@ -368,11 +403,11 @@ public class DiffMapModel extends AbstractMapModel {
 	@Override
 	public int getExtra(Point square, Feature id) {
 		boolean p = primary.contains(square, id);
-		boolean s = secondary.contains(square, id);
+		boolean s = secondary.contains(offset(square), id);
 		if ((p && s) || (!p && !s)) {
 			return FEATURE_ONE_OR_MATCH;
 		} else if (p) {
-			if (isEmpty(secondary, square)) {
+			if (isEmpty(secondary, offset(square))) {
 				return FEATURE_ONE_OR_MATCH;
 			} else {
 				return FEATURE_PRIMARY_ONLY;
@@ -385,24 +420,27 @@ public class DiffMapModel extends AbstractMapModel {
 	/**
 	 * Work out if the primary and secondary square have conflicts. 
 	 * If both are empty return 0. - No new info
-	 * If secondary is empty by primary isn't return 0. - No new info
-	 * If primary is empty by secondary isn't return 1. - Adding new Data to Primary
-	 * If there are more features in primary return 1. - removing stale data from Primary
-	 * If the squares are the same return 2 - Squares match
+	 * If secondary is empty by primary isn't return 0. - no new info
+	 * If primary is empty by secondary isn't return 1. - adding new Data to Primary
+	 * If the squares are the same return 0 - no new info
+	 * If the squares are different return 2 - there are differences.
+	 * If the squares are the same return 0 - no new info
+	 * 
 	 * @param square the square to compare
 	 * @return
 	 */
 	@Override
 	public int getExtra(Point square) {
 		short[] p = primary.getSquare(square);
-		short[] s = secondary.getSquare(square);
+		short[] s = secondary.getSquare(offset(square));
 		
+		int extra;
 		if (isEmpty(p) && isEmpty(s)) {
-			return SQUARE_PRIMARY_ONLY;
+			extra = SQUARE_PRIMARY_ONLY;
 		} else if (isEmpty(p)) {
-			return SQUARE_NEW_OR_MATCH;
+			extra = SQUARE_NEW_OR_MATCH;
 		} else if (isEmpty(s)) {
-			return SQUARE_PRIMARY_ONLY; 
+			extra = SQUARE_PRIMARY_ONLY; 
 		} else {
 		
 			int k = s.length;
@@ -422,9 +460,22 @@ public class DiffMapModel extends AbstractMapModel {
 			} else if (p.length > s.length) {
 				return SQUARE_DIFFERENCES;
 			} else {
-				return SQUARE_NEW_OR_MATCH; 
+				extra = SQUARE_NEW_OR_MATCH; 
 			}
 		}
+		
+		String pn = primary.getSquareNote(square);
+		String sn = secondary.getSquareNote(offset(square));
+		if (pn == null && sn == null) {
+			return extra;
+		} else if (pn != null && sn != null) {
+			if (!pn.equals(sn)) {
+				return SQUARE_DIFFERENCES;
+			}
+		} else if (pn == null) {
+			return SQUARE_DIFFERENCES;
+		}
+		return extra;
 	}
 	
 	private boolean isEmpty(MapModel model, Point square) {
@@ -437,7 +488,7 @@ public class DiffMapModel extends AbstractMapModel {
 	
 	@Override
 	public void recieveMapChangeEvent(MapChangeEvent event) {
-		//TODO deal with incomming events
+		subEvents.add(event);
 	}
 
 	public String toString() {

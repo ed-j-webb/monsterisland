@@ -376,7 +376,7 @@ public class MapIndex implements MapChangeListener {
 				extras.put(extra, l);
 			}
 			if (!l.contains(p)) {
-				l.add(p);
+				l.add(new Point(p));
 			}
 		} else {
 			List<Point> l = extras.get(extra);

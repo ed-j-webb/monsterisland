@@ -1,5 +1,7 @@
 package net.edwebb.jim.model.events;
 
+import java.util.List;
+
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.mi.data.Coordinate;
 
@@ -10,7 +12,10 @@ public class CoordinateChangeEvent extends MapChangeEvent {
 	protected boolean defaultCoord;
 	
 	public CoordinateChangeEvent(MapModel model, Coordinate oldCoord, Coordinate newCoord, boolean defaultCoord) {
-		super(model, MAP_CHANGE_TYPE.COORDINATE);
+		this(model, oldCoord, newCoord, defaultCoord, null);
+	}
+	public CoordinateChangeEvent(MapModel model, Coordinate oldCoord, Coordinate newCoord, boolean defaultCoord, List<MapChangeEvent> subEvents) {
+		super(model, MAP_CHANGE_TYPE.COORDINATE, subEvents);
 		this.oldCoord = oldCoord;
 		this.newCoord = newCoord;
 		this.defaultCoord = defaultCoord;

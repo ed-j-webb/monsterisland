@@ -1,6 +1,7 @@
 package net.edwebb.jim.model.events;
 
 import java.awt.Point;
+import java.util.List;
 
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.mi.data.Flag;
@@ -11,7 +12,10 @@ public class FlagChangeEvent extends MapSquareChangeEvent {
 	protected boolean state;
 	
 	public FlagChangeEvent(MapModel model, Point square, Flag flag, boolean state) {
-		super(model, MAP_CHANGE_TYPE.FLAG, square);
+		this(model, square, flag, state, null);
+	}
+	public FlagChangeEvent(MapModel model, Point square, Flag flag, boolean state, List<MapChangeEvent> subEvents) {
+		super(model, MAP_CHANGE_TYPE.FLAG, square, subEvents);
 		this.flag = flag;
 		this.state = state;
 	}
