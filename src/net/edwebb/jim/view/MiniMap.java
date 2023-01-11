@@ -10,6 +10,7 @@ import java.util.Iterator;
 
 import javax.swing.JPanel;
 
+import net.edwebb.jim.model.DiffMapModel;
 import net.edwebb.jim.model.MapIndex;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
@@ -29,8 +30,8 @@ public class MiniMap extends JPanel implements MapChangeListener {
 	private static final long serialVersionUID = 1L;
 
 	public static final Color PRIMARY = Color.MAGENTA;
-	public static final Color SECONDARY = Color.MAGENTA;
-	public static final Color[] colours = new Color[] {null, null, PRIMARY};
+	public static final Color SECONDARY = Color.PINK;
+	public static final Color[] colours = new Color[] {null, SECONDARY, PRIMARY};
 	
 	private BufferedImage img;
 	private MapModel model;
@@ -87,6 +88,10 @@ public class MiniMap extends JPanel implements MapChangeListener {
 		if (event.getChangeType().equals(MAP_CHANGE_TYPE.TERRAIN)) {
 			TerrainChangeEvent terrainEvent = (TerrainChangeEvent)event;
 			setPoint(terrainEvent.getSquare(), terrainEvent.getNewTerrain());
+			repaint();
+		}
+		
+		if (model instanceof DiffMapModel) {
 			repaint();
 		}
 		
