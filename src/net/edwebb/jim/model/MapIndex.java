@@ -99,6 +99,7 @@ public class MapIndex implements MapChangeListener {
 			if (noteEvent.getNewNote() != null) {
 				addNote(noteEvent.getNewNote(), noteEvent.getSquare());
 			}
+			checkExtra(noteEvent.getSquare());
 			return;
 		}
 		
@@ -109,6 +110,7 @@ public class MapIndex implements MapChangeListener {
 			} else {
 				removeFeature(flagEvent.getFlag(), flagEvent.getSquare());
 			}
+			checkExtra(flagEvent.getSquare());
 			return;
 		}
 
@@ -119,6 +121,7 @@ public class MapIndex implements MapChangeListener {
 			} else {
 				removeFeature(featureEvent.getFeature(), featureEvent.getSquare());
 			}
+			checkExtra(featureEvent.getSquare());
 			return;
 		}
 
@@ -130,6 +133,7 @@ public class MapIndex implements MapChangeListener {
 			if (terrainEvent.getNewTerrain() != null) {
 				addFeature(terrainEvent.getNewTerrain(), terrainEvent.getSquare());
 			}
+			checkExtra(terrainEvent.getSquare());
 			return;
 		}
 	}
@@ -316,7 +320,6 @@ public class MapIndex implements MapChangeListener {
 		}
 		if (!l.contains(p)) {
 			l.add(p);
-			checkExtra(p);
 		}
 	}
 	
@@ -329,7 +332,6 @@ public class MapIndex implements MapChangeListener {
 		List<Point> l = features.get(f);
 		if (l != null && l.contains(p)) {
 			l.remove(p);
-			checkExtra(p);
 		}
 	}
 	
@@ -346,7 +348,6 @@ public class MapIndex implements MapChangeListener {
 		}
 		if (!l.contains(p)) {
 			l.add(p);
-			checkExtra(p);
 		}
 	}
 	
@@ -359,13 +360,12 @@ public class MapIndex implements MapChangeListener {
 		List<Point> l = notes.get(n);
 		if (l != null && l.contains(p)) {
 			l.remove(p);
-			checkExtra(p);
 		}
 	}
 
 
 	/**
-	 * Find out if this square has extra info and add it to the index if it does
+	 * Find out if this square has extra info update the extra lists accordingly
 	 */
 	private void checkExtra(Point p) {
 		Integer extra = model.getExtra(p);
@@ -375,16 +375,15 @@ public class MapIndex implements MapChangeListener {
 				l = new ArrayList<Point>();
 				extras.put(extra, l);
 			}
-			if (!l.contains(p)) {
-				l.add(new Point(p));
-			}
-		} else {
-			List<Point> l = extras.get(extra);
-			if (l != null) {
-				l.remove(p);
-				if (l.isEmpty()) {
-					extras.remove(extra);
-				}
+		}
+		
+		Iterator<Map.Entry<Integer, List<Point>>> it = extras.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<Integer, List<Point>> entry = it.next();
+			if (!entry.getKey().equals(extra)) {
+				entry.getValue().remove(p);
+			} else if(!entry.getValue().contains(p)) {
+				entry.getValue().add(p);
 			}
 		}
 	}
