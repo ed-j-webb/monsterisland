@@ -631,6 +631,7 @@ public class MapController {
 			toolBar.add(getNewAction());
 			toolBar.add(getOpenAction());
 			toolBar.add(getSaveAction());
+			toolBar.add(getCompareAction());
 			toolBar.add(new JToolBar.Separator());
 			toolBar.add(getUndoAction());
 			toolBar.add(getRedoAction());
@@ -644,7 +645,6 @@ public class MapController {
 			toolBar.add(new JToolBar.Separator());
 			//toolBar.add(getScryeAction());
 			toolBar.add(getExtractAction());
-			toolBar.add(getCompareAction());
 			toolBar.add(getSaveDifferencesAction());
 			toolBar.add(getSaveMergedAction());
 			toolBar.add(getTranslateAction());
