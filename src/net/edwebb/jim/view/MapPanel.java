@@ -111,9 +111,10 @@ public class MapPanel extends JPanel {
 				decorators.get(FLAG).decorate(g2d, sqr, px, py, model, search);
 			}
 	
-			if (decorators.containsKey(NOTE)) {
-				decorators.get(NOTE).decorate(g2d, sqr, px, py, model, search);
-			}
+		}
+
+		if (decorators.containsKey(BORDER)) {
+			decorators.get(BORDER).decorate(g2d, sqr, px, py, model, search);
 		}
 
 		String note = model.getSquareNote(sqr);
@@ -123,8 +124,5 @@ public class MapPanel extends JPanel {
 			}
 		}
 		
-		if (decorators.containsKey(BORDER)) {
-			decorators.get(BORDER).decorate(g2d, sqr, px, py, model, search);
-		}
 	}
 }
