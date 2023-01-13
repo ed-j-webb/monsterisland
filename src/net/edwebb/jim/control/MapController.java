@@ -164,7 +164,7 @@ public class MapController {
 	public void setModel(MapModel model) {
 		this.model = model;
 		setSearch(null);
-		buildIndex(model);
+		getIndex().setModel(model);
 		getUndoManager().setModel(model);
 		setMapLabel(model);
 		getView().setModel(model);
@@ -237,7 +237,7 @@ public class MapController {
 	
 	public MapIndex getIndex() {
 		if (index == null) {
-			buildIndex(getModel());
+			index = new MapIndex(getModel());
 		}
 		return index;
 	}
@@ -276,15 +276,6 @@ public class MapController {
 		getMiniMap().repaint();
 	}
 
-	/**
-	 * Sets a new index for the controller to use
-	 * @param model the model to build the index from 
-	 */
-	public void buildIndex(MapModel model) {
-		index = new MapIndex(model);
-		getMiniMap().setIndex(index);
-	}
-	
 	/**
 	 * Returns the Frame of the application
 	 * @return the Frame of the application
@@ -592,6 +583,7 @@ public class MapController {
 	public MiniMap getMiniMap() {
 		if (miniMap == null) {
 			miniMap = new MiniMap(getModel());
+			miniMap.setIndex(getIndex());
 			miniMap.addMouseListener(getSelectViewListener());
 		}
 		return miniMap;

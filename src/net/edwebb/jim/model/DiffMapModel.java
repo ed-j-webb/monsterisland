@@ -15,6 +15,7 @@ import net.edwebb.jim.model.events.SelectedChangeEvent;
 import net.edwebb.jim.model.events.TerrainChangeEvent;
 import net.edwebb.jim.model.events.ViewChangeEvent;
 import net.edwebb.mi.data.Coordinate;
+import net.edwebb.mi.data.Decoder;
 import net.edwebb.mi.data.Feature;
 import net.edwebb.mi.data.Flag;
 import net.edwebb.mi.data.Terrain;
@@ -216,7 +217,8 @@ public class DiffMapModel extends AbstractMapModel {
 			} else {
 				x = new short[s.length + 1];
 				x[0] = 0;
-				System.arraycopy(s, 0, x, 1, s.length);
+				x[1] = Decoder.shortLowByte(s[0]);
+				System.arraycopy(s, 1, x, 1, s.length-1);
 				return x;
 			}
 		} else if (s == null || s.length == 0) {
@@ -230,7 +232,8 @@ public class DiffMapModel extends AbstractMapModel {
 		x[0] = (short)(x[0] & 0xff);
 		
 		int k = s.length;
-		if (x[0] == 0 || x[0] == p[0]) {
+		// If the primary and secondary terrains match then discard the secondary terrain.
+		if (x[0] == 0 || x[0] == Decoder.shortLowByte(p[0])) {
 			x[0] = 0;
 			k--;
 		}
