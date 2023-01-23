@@ -1,6 +1,7 @@
 package net.edwebb.jim.undo;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.undo.CannotRedoException;
@@ -8,12 +9,12 @@ import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.events.CoordinateChangeEvent;
 import net.edwebb.jim.model.events.FeatureChangeEvent;
 import net.edwebb.jim.model.events.FlagChangeEvent;
 import net.edwebb.jim.model.events.MapChangeEvent;
-import net.edwebb.jim.model.events.MapChangeEvent.MAP_CHANGE_TYPE;
 import net.edwebb.jim.model.events.MapChangeListener;
 import net.edwebb.jim.model.events.NoteChangeEvent;
 import net.edwebb.jim.model.events.TerrainChangeEvent;
@@ -45,8 +46,10 @@ public class ChangeUndoManager extends UndoManager implements MapChangeListener 
 	@Override
 	public synchronized void undo() throws CannotUndoException {
 		ignore = true;
+		UndoableChange change = (UndoableChange)editToBeUndone();
 		super.undo();
 		for (UndoListener l : listeners) {
+			l.changeMade(change, true);
 			l.undoManagerChanged(this);
 		}
 		ignore = false;
@@ -55,8 +58,10 @@ public class ChangeUndoManager extends UndoManager implements MapChangeListener 
 	@Override
 	public synchronized void redo() throws CannotRedoException {
 		ignore = true;
+		UndoableChange change = (UndoableChange)editToBeRedone();
 		super.redo();
 		for (UndoListener l : listeners) {
+			l.changeMade(change, false);
 			l.undoManagerChanged(this);
 		}
 		ignore = false;
@@ -88,8 +93,6 @@ public class ChangeUndoManager extends UndoManager implements MapChangeListener 
 		}
 	}
 	
-	
-	
 	@Override
 	public synchronized String getUndoPresentationName() {
 		if (canUndo()) {
@@ -111,45 +114,64 @@ public class ChangeUndoManager extends UndoManager implements MapChangeListener 
 		if (ignore) {
 			return;
 		}
+
+		UndoableChange change = null;
+		if (event.hasSubEvents()) {
+			UndoableCombinedChange combined = new UndoableCombinedChange(getUndoableChange(event).getPresentationName());
+			Iterator<MapChangeEvent> it = event.getSubEvents().iterator();
+			while (it.hasNext()) {
+				MapChangeEvent subEvent = it.next();
+				UndoableChange subChange = getUndoableChange(subEvent);
+				if (subChange != null) {
+					combined.addChange(subChange);
+				}
+			}
+			if (combined.hasChanges()) {
+				change = combined;
+			}
+		} else {
+			change = getUndoableChange(event);
+		}
 		
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.TERRAIN)) {
+		if (change != null) {
+			this.addEdit(change);
+			for (UndoListener l : listeners) {
+				l.undoManagerChanged(this);
+			}
+		}
+	}
+
+	private UndoableChange getUndoableChange(MapChangeEvent event) {
+		if (event.getChangeType().equals(ChangeType.TERRAIN)) {
 			TerrainChangeEvent terrainEvent = (TerrainChangeEvent)event;
-			UndoableTerrainChange change = new UndoableTerrainChange(event.getModel(), terrainEvent.getSquare(), terrainEvent.getOldTerrain(), terrainEvent.getNewTerrain());
-			this.addEdit(change);
+			return new UndoableTerrainChange(event.getModel(), terrainEvent.getSquare(), terrainEvent.getOldTerrain(), terrainEvent.getNewTerrain());
 		}
 
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FEATURE)) {
+		if (event.getChangeType().equals(ChangeType.FEATURE)) {
 			FeatureChangeEvent featureEvent = (FeatureChangeEvent)event;
-			UndoableFeatureChange change = new UndoableFeatureChange(event.getModel(), featureEvent.getSquare(), featureEvent.getFeature(), featureEvent.isAdded());
-			this.addEdit(change);
+			return new UndoableFeatureChange(event.getModel(), featureEvent.getSquare(), featureEvent.getFeature(), featureEvent.isAdded());
 		}
 
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.NOTE)) {
+		if (event.getChangeType().equals(ChangeType.NOTE)) {
 			NoteChangeEvent noteEvent = (NoteChangeEvent)event;
-			UndoableNoteChange change = new UndoableNoteChange(event.getModel(), noteEvent.getSquare(), noteEvent.getOldNote(), noteEvent.getNewNote());
-			this.addEdit(change);
+			return new UndoableNoteChange(event.getModel(), noteEvent.getSquare(), noteEvent.getOldNote(), noteEvent.getNewNote());
 		}
 
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.COORDINATE)) {
+		if (event.getChangeType().equals(ChangeType.COORDINATE)) {
 			CoordinateChangeEvent coordEvent = (CoordinateChangeEvent)event;
 			if (coordEvent.isDefaultCoord()) {
-				UndoableCoordinateChange change = new UndoableCoordinateChange(event.getModel(), coordEvent.getOldCoord(), coordEvent.getNewCoord());
-				this.addEdit(change);
+				return new UndoableCoordinateChange(event.getModel(), coordEvent.getOldCoord(), coordEvent.getNewCoord());
 			}
 		}
 
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FLAG)) {
+		if (event.getChangeType().equals(ChangeType.FLAG)) {
 			FlagChangeEvent flagEvent = (FlagChangeEvent)event;
-			UndoableFlagChange change = new UndoableFlagChange(event.getModel(), flagEvent.getSquare(), flagEvent.getFlag(), flagEvent.isSet());
-			this.addEdit(change);
+			return new UndoableFlagChange(event.getModel(), flagEvent.getSquare(), flagEvent.getFlag(), flagEvent.isSet());
 		}
 		
-		for (UndoListener l : listeners) {
-			l.undoManagerChanged(this);
-		}
-
+		return null;
 	}
-
+	
 	public boolean removeNextUndo() {
 		UndoableEdit nextEdit = editToBeUndone();
 		if (nextEdit == null) {

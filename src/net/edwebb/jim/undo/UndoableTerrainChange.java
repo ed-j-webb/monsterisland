@@ -5,6 +5,7 @@ import java.awt.Point;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.mi.data.Terrain;
 
@@ -19,20 +20,20 @@ public class UndoableTerrainChange extends UndoableMapChange {
 	private Terrain newTerrain;
 	
 	public UndoableTerrainChange(MapModel model, Point pos, Terrain oldTerrain, Terrain newTerrain) {
-		super(model, pos);
+		super(model, pos, ChangeType.TERRAIN);
 		this.oldTerrain = oldTerrain;
 		this.newTerrain = newTerrain;
 	}
 	
 	public void undo() throws CannotUndoException {
 		super.undo();
-		model.setTerrain(pos, oldTerrain);
+		model.setTerrain(square, oldTerrain);
 	}
 
 	@Override
 	public void redo() throws CannotRedoException {
 		super.redo();
-		model.setTerrain(pos, newTerrain);
+		model.setTerrain(square, newTerrain);
 	}
 	
 	public String getPresentationName() {

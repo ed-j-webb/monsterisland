@@ -2,6 +2,7 @@ package net.edwebb.jim.model.events;
 
 import java.awt.Rectangle;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 
 public class ViewChangeEvent extends MapChangeEvent {
@@ -10,7 +11,7 @@ public class ViewChangeEvent extends MapChangeEvent {
 	private Rectangle newView;
 	
 	public ViewChangeEvent(MapModel model, Rectangle oldView, Rectangle newView) {
-		super(model, MAP_CHANGE_TYPE.VIEW);
+		super(model, ChangeType.VIEW);
 		this.oldView = oldView;
 		this.newView = newView;
 	}

@@ -12,12 +12,12 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JToolBar;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.control.MapController;
 import net.edwebb.jim.control.actions.CoordAction;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.events.CoordinateChangeEvent;
 import net.edwebb.jim.model.events.MapChangeEvent;
-import net.edwebb.jim.model.events.MapChangeEvent.MAP_CHANGE_TYPE;
 import net.edwebb.jim.model.events.MapChangeListener;
 import net.edwebb.mi.data.Coordinate;
 import net.edwebb.mi.data.DataStore;
@@ -122,7 +122,7 @@ public class CoordinatePanel extends JToolBar implements MapChangeListener {
 
 	@Override
 	public void mapChanged(MapChangeEvent event) {
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.COORDINATE)) {
+		if (event.getChangeType().equals(ChangeType.COORDINATE)) {
 			CoordinateChangeEvent coordEvent = (CoordinateChangeEvent)event;
 			if (coordEvent.getNewCoord() != null) {
 				getCmbCoords().setSelectedItem(coordEvent.getNewCoord());

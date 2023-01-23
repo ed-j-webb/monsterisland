@@ -25,13 +25,18 @@ import javax.swing.JToggleButton;
 import javax.swing.SpringLayout;
 import javax.swing.border.TitledBorder;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.FeatureComboBoxModel;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.events.MapChangeEvent;
 import net.edwebb.jim.model.events.MapChangeListener;
 import net.edwebb.jim.model.events.MapSquareChangeEvent;
 import net.edwebb.jim.model.events.SelectedChangeEvent;
-import net.edwebb.jim.model.events.MapChangeEvent.MAP_CHANGE_TYPE;
+import net.edwebb.jim.undo.ChangeUndoManager;
+import net.edwebb.jim.undo.UndoListener;
+import net.edwebb.jim.undo.UndoableChange;
+import net.edwebb.jim.undo.UndoableCombinedChange;
+import net.edwebb.jim.undo.UndoableMapChange;
 import net.edwebb.mi.data.Creature;
 import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Feature;
@@ -40,7 +45,7 @@ import net.edwebb.mi.data.Location;
 import net.edwebb.mi.data.Plant;
 import net.edwebb.mi.data.Terrain;
 
-public class EditPanel extends JPanel implements MapChangeListener {
+public class EditPanel extends JPanel implements MapChangeListener, UndoListener {
 
 	/**
 	 * The version ID
@@ -110,7 +115,7 @@ public class EditPanel extends JPanel implements MapChangeListener {
 	
 	@Override
 	public void mapChanged(MapChangeEvent event) {
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.SELECTED)) {
+		if (event.getChangeType().equals(ChangeType.SELECTED)) {
 			SelectedChangeEvent selectedEvent = (SelectedChangeEvent)event;
 			if (selectedEvent.getNewSelected() != null) {
 				refresh(selectedEvent.getNewSelected());
@@ -118,14 +123,14 @@ public class EditPanel extends JPanel implements MapChangeListener {
 			return;
 		}
 
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.COORDINATE)) {
+		if (event.getChangeType().equals(ChangeType.COORDINATE)) {
 			refresh(model.getSelected());
 		}
 		
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FEATURE)
-		 || event.getChangeType().equals(MAP_CHANGE_TYPE.TERRAIN)
-		 || event.getChangeType().equals(MAP_CHANGE_TYPE.FLAG)
-		 || event.getChangeType().equals(MAP_CHANGE_TYPE.NOTE)) {
+		if (event.getChangeType().equals(ChangeType.FEATURE)
+		 || event.getChangeType().equals(ChangeType.TERRAIN)
+		 || event.getChangeType().equals(ChangeType.FLAG)
+		 || event.getChangeType().equals(ChangeType.NOTE)) {
 			MapSquareChangeEvent squareEvent = (MapSquareChangeEvent)event;
 			if (squareEvent.getSquare().equals(model.getSelected())) {
 				refresh(squareEvent.getSquare());
@@ -134,6 +139,29 @@ public class EditPanel extends JPanel implements MapChangeListener {
 		}
 	}
 	
+	@Override
+	public void undoManagerChanged(ChangeUndoManager manager) {
+	}
+	
+	@Override
+	public void changeMade(UndoableChange change, boolean undone) {
+		if (change instanceof UndoableMapChange) {
+			UndoableMapChange mapChange = (UndoableMapChange)change;
+			if (mapChange.getSquare().equals(model.getSelected())) {
+				refresh(mapChange.getSquare());
+			}
+			return;
+		}
+		
+		if (change instanceof UndoableCombinedChange) {
+			UndoableCombinedChange combinedChange = (UndoableCombinedChange)change;
+			if (combinedChange.contains(model.getSelected())) {
+				refresh(model.getSelected());
+			}
+			return;
+		}
+	}
+
 	private void refresh(Point position) {
 		while (getEditor().getComponentCount() > 4) {
 			getEditor().remove(2);

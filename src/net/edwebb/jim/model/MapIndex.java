@@ -10,13 +10,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.events.FeatureChangeEvent;
 import net.edwebb.jim.model.events.FlagChangeEvent;
 import net.edwebb.jim.model.events.MapChangeEvent;
 import net.edwebb.jim.model.events.MapChangeListener;
 import net.edwebb.jim.model.events.NoteChangeEvent;
 import net.edwebb.jim.model.events.TerrainChangeEvent;
-import net.edwebb.jim.model.events.MapChangeEvent.MAP_CHANGE_TYPE;
 import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Feature;
 
@@ -91,7 +91,7 @@ public class MapIndex implements MapChangeListener {
 	
 	@Override
 	public void mapChanged(MapChangeEvent event) {
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.NOTE)) {
+		if (event.getChangeType().equals(ChangeType.NOTE)) {
 			NoteChangeEvent noteEvent = (NoteChangeEvent)event;
 			if (noteEvent.getOldNote() != null) {
 				removeNote(noteEvent.getOldNote(), noteEvent.getSquare());
@@ -103,7 +103,7 @@ public class MapIndex implements MapChangeListener {
 			return;
 		}
 		
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FLAG)) {
+		if (event.getChangeType().equals(ChangeType.FLAG)) {
 			FlagChangeEvent flagEvent = (FlagChangeEvent)event;
 			if (flagEvent.isSet()) {
 				addFeature(flagEvent.getFlag(), flagEvent.getSquare());
@@ -114,7 +114,7 @@ public class MapIndex implements MapChangeListener {
 			return;
 		}
 
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.FEATURE)) {
+		if (event.getChangeType().equals(ChangeType.FEATURE)) {
 			FeatureChangeEvent featureEvent = (FeatureChangeEvent)event;
 			if (featureEvent.isAdded()) {
 				addFeature(featureEvent.getFeature(), featureEvent.getSquare());
@@ -125,7 +125,7 @@ public class MapIndex implements MapChangeListener {
 			return;
 		}
 
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.TERRAIN)) {
+		if (event.getChangeType().equals(ChangeType.TERRAIN)) {
 			TerrainChangeEvent terrainEvent = (TerrainChangeEvent)event;
 			if (terrainEvent.getOldTerrain() != null) {
 				removeFeature(terrainEvent.getOldTerrain(), terrainEvent.getSquare());

@@ -10,6 +10,7 @@ import java.util.Iterator;
 
 import javax.swing.JPanel;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.DiffMapModel;
 import net.edwebb.jim.model.MapIndex;
 import net.edwebb.jim.model.MapModel;
@@ -18,7 +19,6 @@ import net.edwebb.jim.model.events.MapChangeEvent;
 import net.edwebb.jim.model.events.MapChangeListener;
 import net.edwebb.jim.model.events.TerrainChangeEvent;
 import net.edwebb.jim.model.events.ViewChangeEvent;
-import net.edwebb.jim.model.events.MapChangeEvent.MAP_CHANGE_TYPE;
 import net.edwebb.mi.data.DataStore;
 import net.edwebb.mi.data.Terrain;
 
@@ -77,7 +77,7 @@ public class MiniMap extends JPanel implements MapChangeListener {
 	
 	@Override
 	public void mapChanged(MapChangeEvent event) {
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.VIEW)) {
+		if (event.getChangeType().equals(ChangeType.VIEW)) {
 			ViewChangeEvent viewEvent = (ViewChangeEvent)event;
 			if (viewEvent.getNewView() != null) {
 				repaint();
@@ -85,7 +85,7 @@ public class MiniMap extends JPanel implements MapChangeListener {
 			return;
 		}
 		
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.TERRAIN)) {
+		if (event.getChangeType().equals(ChangeType.TERRAIN)) {
 			TerrainChangeEvent terrainEvent = (TerrainChangeEvent)event;
 			setPoint(terrainEvent.getSquare(), terrainEvent.getNewTerrain());
 			repaint();

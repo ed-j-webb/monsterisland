@@ -13,12 +13,12 @@ import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.jim.model.MapSearch;
 import net.edwebb.jim.model.events.MapChangeEvent;
 import net.edwebb.jim.model.events.MapChangeListener;
 import net.edwebb.jim.model.events.ViewChangeEvent;
-import net.edwebb.jim.model.events.MapChangeEvent.MAP_CHANGE_TYPE;
 
 public class ViewPanel extends JPanel implements MapChangeListener {
 
@@ -118,7 +118,7 @@ public class ViewPanel extends JPanel implements MapChangeListener {
 	
 	@Override
 	public void mapChanged(MapChangeEvent event) {
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.VIEW)) {
+		if (event.getChangeType().equals(ChangeType.VIEW)) {
 			ViewChangeEvent viewEvent = (ViewChangeEvent)event;
 			if (viewEvent.getNewView() != null) {
 				getScrHorizontal().setValue(viewEvent.getNewView().x);
@@ -133,12 +133,12 @@ public class ViewPanel extends JPanel implements MapChangeListener {
 			return;
 		}
 
-		if (event.getChangeType().equals(MAP_CHANGE_TYPE.TERRAIN)
-		 || event.getChangeType().equals(MAP_CHANGE_TYPE.SELECTED)
-		 || event.getChangeType().equals(MAP_CHANGE_TYPE.COORDINATE)
-		 || event.getChangeType().equals(MAP_CHANGE_TYPE.FEATURE)
-		 || event.getChangeType().equals(MAP_CHANGE_TYPE.FLAG)
-		 || event.getChangeType().equals(MAP_CHANGE_TYPE.NOTE)) {
+		if (event.getChangeType().equals(ChangeType.TERRAIN)
+		 || event.getChangeType().equals(ChangeType.SELECTED)
+		 || event.getChangeType().equals(ChangeType.COORDINATE)
+		 || event.getChangeType().equals(ChangeType.FEATURE)
+		 || event.getChangeType().equals(ChangeType.FLAG)
+		 || event.getChangeType().equals(ChangeType.NOTE)) {
 			repaint();
 			return;
 		}

@@ -2,6 +2,7 @@ package net.edwebb.jim.undo;
 
 import java.awt.Point;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 
 public abstract class UndoableMapChange extends UndoableChange {
@@ -12,22 +13,30 @@ public abstract class UndoableMapChange extends UndoableChange {
 	private static final long serialVersionUID = 1L;
 	
 	protected MapModel model;
-	protected Point pos;
+	protected Point square;
 	
-	public UndoableMapChange(MapModel model, Point pos) {
-		super();
+	public UndoableMapChange(MapModel model, Point square, ChangeType changeType) {
+		super(changeType);
 		this.model = model;
-		if (pos != null) {
-			this.pos = new Point(pos);
+		if (square != null) {
+			this.square = new Point(square);
 		}
+	}
+	
+	public MapModel getModel() {
+		return model;
+	}
+	
+	public Point getSquare() {
+		return square;
 	}
 	
 	public String getPresentationName() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
-		sb.append(pos.y);
+		sb.append(square.y);
 		sb.append(",");
-		sb.append(pos.x);
+		sb.append(square.x);
 		sb.append(")");
 		return sb.toString();
 	}

@@ -3,6 +3,7 @@ package net.edwebb.jim.undo;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.mi.data.Coordinate;
 
@@ -17,7 +18,7 @@ public class UndoableCoordinateChange extends UndoableMapChange {
 	private Coordinate newCoord;
 	
 	public UndoableCoordinateChange(MapModel model, Coordinate oldCoord, Coordinate newCoord) {
-		super(model, null);
+		super(model, null, ChangeType.COORDINATE);
 		this.oldCoord = oldCoord;
 		this.newCoord = newCoord;
 	}

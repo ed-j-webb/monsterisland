@@ -8,6 +8,7 @@ import javax.swing.KeyStroke;
 
 import net.edwebb.jim.undo.ChangeUndoManager;
 import net.edwebb.jim.undo.UndoListener;
+import net.edwebb.jim.undo.UndoableChange;
 
 public class RedoAction extends MapAction implements UndoListener {
 
@@ -42,5 +43,9 @@ public class RedoAction extends MapAction implements UndoListener {
 	public void undoManagerChanged(ChangeUndoManager manager) {
 		setEnabled(manager.canRedo());
 		putValue(SHORT_DESCRIPTION, manager.getRedoPresentationName());
+	}
+
+	@Override
+	public void changeMade(UndoableChange change, boolean undone) {
 	}
 }

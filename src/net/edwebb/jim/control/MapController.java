@@ -165,10 +165,10 @@ public class MapController {
 		this.model = model;
 		setSearch(null);
 		getIndex().setModel(model);
-		getUndoManager().setModel(model);
 		setMapLabel(model);
 		getView().setModel(model);
 		getEdit().setModel(model);
+		getUndoManager().setModel(model);
 		getMiniMap().setModel(model);
 		getCoordinatePanel().setModel(model);
 		if (getFrame().isVisible()) {
@@ -252,6 +252,9 @@ public class MapController {
 	public ChangeUndoManager getUndoManager() {
 		if (undoManager == null) {
 			undoManager = new ChangeUndoManager(getModel());
+			undoManager.addUndoListener(getEdit());
+			//undoManager.addUndoListener(getView());
+			//undoManager.addUndoListener(getMiniMap());
 		}
 		return undoManager;
 	}

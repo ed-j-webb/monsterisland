@@ -5,6 +5,7 @@ import java.awt.Point;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.mi.data.Flag;
 
@@ -19,7 +20,7 @@ public class UndoableFlagChange extends UndoableMapChange {
 	private boolean state;
 	
 	public UndoableFlagChange(MapModel model, Point pos, Flag flag, boolean state) {
-		super(model, pos);
+		super(model, pos, ChangeType.FLAG);
 		this.flag = flag;
 		this.state = state;
 	}
@@ -27,13 +28,13 @@ public class UndoableFlagChange extends UndoableMapChange {
 	@Override
 	public void redo() throws CannotRedoException {
 		super.redo();
-		model.toggleFlag(pos, flag, state ? 1 : -1);
+		model.toggleFlag(square, flag, state ? 1 : -1);
 	}
 
 	@Override
 	public void undo() throws CannotUndoException {
 		super.undo();
-		model.toggleFlag(pos, flag, state ? -1 : 1);
+		model.toggleFlag(square, flag, state ? -1 : 1);
 	}
 	
 	public String getPresentationName() {

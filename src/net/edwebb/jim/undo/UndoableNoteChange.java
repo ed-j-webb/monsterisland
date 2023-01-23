@@ -5,6 +5,7 @@ import java.awt.Point;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 
 public class UndoableNoteChange extends UndoableMapChange {
@@ -18,7 +19,7 @@ public class UndoableNoteChange extends UndoableMapChange {
 	private String newNote;
 	
 	public UndoableNoteChange(MapModel model, Point pos, String oldNote, String newNote) {
-		super(model, pos);
+		super(model, pos, ChangeType.NOTE);
 		this.oldNote = oldNote;
 		this.newNote = newNote;
 	}
@@ -26,13 +27,13 @@ public class UndoableNoteChange extends UndoableMapChange {
 	@Override
 	public void redo() throws CannotRedoException {
 		super.redo();
-		model.setSquareNote(pos, newNote);
+		model.setSquareNote(square, newNote);
 	}
 
 	@Override
 	public void undo() throws CannotUndoException {
 		super.undo();
-		model.setSquareNote(pos, oldNote);
+		model.setSquareNote(square, oldNote);
 	}
 	
 	public String getPresentationName() {

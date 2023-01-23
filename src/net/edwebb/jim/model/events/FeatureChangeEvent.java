@@ -3,6 +3,7 @@ package net.edwebb.jim.model.events;
 import java.awt.Point;
 import java.util.List;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.mi.data.Feature;
 
@@ -17,7 +18,7 @@ public class FeatureChangeEvent extends MapSquareChangeEvent {
 
 	public FeatureChangeEvent(MapModel model, Point square, Feature feature, boolean added, List<MapChangeEvent> subEvents) {
 
-		super(model, MAP_CHANGE_TYPE.FEATURE, square, subEvents);
+		super(model, ChangeType.FEATURE, square, subEvents);
 		this.feature = feature;
 		this.added = added;
 	}

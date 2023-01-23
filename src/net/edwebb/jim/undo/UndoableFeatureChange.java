@@ -5,6 +5,7 @@ import java.awt.Point;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 import net.edwebb.mi.data.Feature;
 
@@ -19,7 +20,7 @@ public class UndoableFeatureChange extends UndoableMapChange {
 	private boolean added;
 	
 	public UndoableFeatureChange(MapModel model, Point pos, Feature feature, boolean added) {
-		super(model, pos);
+		super(model, pos, ChangeType.FEATURE);
 		this.feature = feature;
 		this.added = added;
 	}
@@ -28,9 +29,9 @@ public class UndoableFeatureChange extends UndoableMapChange {
 	public void redo() throws CannotRedoException {
 		super.redo();
 		if (added) {
-			model.add(pos, feature);
+			model.add(square, feature);
 		} else {
-			model.remove(pos, feature);
+			model.remove(square, feature);
 		}
 	}
 
@@ -38,9 +39,9 @@ public class UndoableFeatureChange extends UndoableMapChange {
 	public void undo() throws CannotUndoException {
 		super.undo();
 		if (added) {
-			model.remove(pos, feature);
+			model.remove(square, feature);
 		} else {
-			model.add(pos, feature);
+			model.add(square, feature);
 		}
 	}
 	

@@ -2,6 +2,7 @@ package net.edwebb.jim.model.events;
 
 import java.awt.Point;
 
+import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.MapModel;
 
 public class SelectedChangeEvent extends MapChangeEvent {
@@ -10,7 +11,7 @@ public class SelectedChangeEvent extends MapChangeEvent {
 	private Point newSelected;
 	
 	public SelectedChangeEvent(MapModel model, Point oldSelected, Point newSelected) {
-		super(model, MAP_CHANGE_TYPE.SELECTED);
+		super(model, ChangeType.SELECTED);
 		this.oldSelected = oldSelected;
 		this.newSelected = newSelected;
 	}
