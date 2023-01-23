@@ -12,13 +12,21 @@ import java.util.Map;
  */
 public class MapData {
 
-	// The dimensions of the map and its top left square
+	// The dimensions of the map
 	private int top;
 	private int left;
 	private int width;
 	private int height;
+	
+	// The top left corner
 	private int selx;
 	private int sely;
+	
+	// the used portion of the map (most *-erly square)
+	private int north;
+	private int east;
+	private int south;
+	private int west;
 	
 	private boolean dirty = false;
 	
@@ -50,8 +58,15 @@ public class MapData {
 		this.left = left;
 		this.width = width;
 		this.height = height;
+		
 		this.sely = y;
 		this.selx = x;
+
+		this.north = height;
+		this.east = 0;
+		this.south = 0; 
+		this.west = width;
+
 		this.data = new short[width][height][];
 		notes = new HashMap<Point,String>();
 	}
@@ -70,6 +85,7 @@ public class MapData {
 	
 	public void setSquare(int x, int y, short[] sqr) {
 		data[x][y] = sqr;
+		setUsed(x, y);
 		dirty = true;
 	}
 	
@@ -83,6 +99,7 @@ public class MapData {
 		} else {
 			notes.put(new Point(x, y), note);
 		}
+		setUsed(x, y);
 		dirty = true;
 	}
 	
@@ -161,5 +178,34 @@ public class MapData {
 		this.dirty = dirty;
 	}
 	
-	
+	private void setUsed(int x, int y) {
+		if (x < west) {
+			west = x;
+		}
+		if (x > east) {
+			east = x;
+		}
+		if (y < north) {
+			north = y;
+		}
+		if (y > south) {
+			south = y;
+		}
+	}
+
+	public int getNorth() {
+		return north;
+	}
+
+	public int getEast() {
+		return east;
+	}
+
+	public int getSouth() {
+		return south;
+	}
+
+	public int getWest() {
+		return west;
+	}
 }

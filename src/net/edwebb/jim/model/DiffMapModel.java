@@ -38,6 +38,7 @@ public class DiffMapModel extends AbstractMapModel {
 	private Rectangle view = new Rectangle(0, 0, 30, 20);
 	private Point selected = new Point(0, 0);
 
+	// The difference between the primary and secondary maps' co-ordinates
 	private Point offset = new Point(0, 0);
 	
 	protected List<TerrainChangeEvent> terrainEvents = new ArrayList<TerrainChangeEvent>();
@@ -55,15 +56,15 @@ public class DiffMapModel extends AbstractMapModel {
 		this.primary = primary;
 		primary.setParent(this);
 		this.secondary = secondary;
+
 		this.offset = primary.getDefaultCoOrdinates().getOffset(secondary.getDefaultCoOrdinates()); 
 		//secondary.setDefaultCoOrdinates(primary.getDefaultCoOrdinates());
 		secondary.setParent(this);
 		
-		Point topLeft = new Point(Math.min(primary.getBounds().x, secondary.getBounds().y), Math.max(primary.getBounds().y, secondary.getBounds().y));
-		Point bottomRight = new Point(Math.max(primary.getBounds().x + primary.getBounds().width, secondary.getBounds().x + secondary.getBounds().width), Math.min(primary.getBounds().y - primary.getBounds().height, secondary.getBounds().y - secondary.getBounds().height));
+		Point topLeft = new Point(Math.min(primary.getBounds().x, secondary.getUsed().x + offset.x), Math.max(primary.getBounds().y, secondary.getUsed().y + offset.y));
+		Point bottomRight = new Point(Math.max(primary.getBounds().x + primary.getBounds().width, secondary.getUsed().x + secondary.getUsed().width + offset.x), Math.min(primary.getBounds().y - primary.getBounds().height, secondary.getUsed().y - secondary.getUsed().height + offset.y));
 		Dimension widthHeight = new Dimension(bottomRight.x - topLeft.x + 1, topLeft.y - bottomRight.y + 1);  
 		bounds = new Rectangle(topLeft, widthHeight);
-		
 	}
 	
 	@Override
@@ -153,6 +154,12 @@ public class DiffMapModel extends AbstractMapModel {
 
 	@Override
 	public Rectangle getBounds() {
+		return bounds;
+	}
+
+	@Override
+	public Rectangle getUsed() {
+		// TODO not right but not needed?
 		return bounds;
 	}
 

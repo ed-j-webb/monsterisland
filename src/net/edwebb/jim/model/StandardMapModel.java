@@ -30,6 +30,8 @@ public class StandardMapModel extends AbstractMapModel {
 	private Point offset = new Point(0, 0);
 	
 	private Rectangle bounds;
+	private Rectangle used;
+	
 	private Rectangle view = new Rectangle(0, 0, 30, 20);
 	private Point selected = null;
 	
@@ -40,6 +42,7 @@ public class StandardMapModel extends AbstractMapModel {
 		this.currentCoord = new Coordinate(new Point(data.getOffX(), data.getOffY()), data.getOffset());
 		this.defaultCoord = new Coordinate(new Point(data.getOffX(), data.getOffY()), data.getOffset());
 		bounds = new Rectangle(data.getLeft(), data.getTop(), data.getWidth(), data.getHeight());
+		used = new Rectangle(data.getLeft() + data.getWest(), data.getTop() - data.getNorth(), data.getEast() - data.getWest(), data.getSouth() - data.getNorth());
 	}
 
 	@Override
@@ -75,6 +78,11 @@ public class StandardMapModel extends AbstractMapModel {
 	@Override
 	public Rectangle getBounds() {
 		return bounds;
+	}
+
+	@Override
+	public Rectangle getUsed() {
+		return used;
 	}
 
 	@Override
@@ -322,7 +330,7 @@ public class StandardMapModel extends AbstractMapModel {
 	}
 	
 	private void updateOffset() {
-		if (defaultCoord != null && currentCoord != null) {
+		if (defaultCoord != null && currentCoord != null && !currentCoord.getOffset().equals(new Point(0, 0))) {
 			this.offset = defaultCoord.getOffset(currentCoord);
 		} else {
 			this.offset = new Point(0, 0);

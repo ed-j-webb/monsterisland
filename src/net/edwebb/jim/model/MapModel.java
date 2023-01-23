@@ -32,6 +32,8 @@ public interface MapModel {
 	public void setBounds(Rectangle rect);
 	public Rectangle getBounds();
 	
+	public Rectangle getUsed();
+
 	public void setView(Rectangle rect);
 	public Rectangle getView();
 	
