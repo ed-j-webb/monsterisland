@@ -27,8 +27,8 @@ public class UndoAction extends MapAction implements UndoListener {
         putValue(Action.SHORT_DESCRIPTION, "Undo change");
         putValue(Action.LONG_DESCRIPTION, "Undo a change to the map");
         putValue(Action.SMALL_ICON, makeImageIcon("undo-16x16.gif"));
-        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control U"));
-        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_U));
+        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control Z"));
+        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_Z));
         setEnabled(false);
 	}
 	

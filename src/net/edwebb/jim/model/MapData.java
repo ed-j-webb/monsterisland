@@ -62,10 +62,10 @@ public class MapData {
 		this.sely = y;
 		this.selx = x;
 
-		this.north = height;
-		this.east = 0;
-		this.south = 0; 
-		this.west = width;
+		this.north = top - height;
+		this.east = left;
+		this.south = top; 
+		this.west = left + width;
 
 		this.data = new short[width][height][];
 		notes = new HashMap<Point,String>();
@@ -179,17 +179,17 @@ public class MapData {
 	}
 	
 	private void setUsed(int x, int y) {
-		if (x < west) {
-			west = x;
+		if (x + left < west) {
+			west = x + left;
 		}
-		if (x > east) {
-			east = x;
+		if (x + left > east) {
+			east = x + left;
 		}
-		if (y < north) {
-			north = y;
+		if (top - y > north) {
+			north = top - y;
 		}
-		if (y > south) {
-			south = y;
+		if (top - y < south) {
+			south = top - y;
 		}
 	}
 
@@ -208,4 +208,32 @@ public class MapData {
 	public int getWest() {
 		return west;
 	}
+	
+	private void copy(MapData from, MapData to) {
+		int uleft = Math.max(from.getWest(), to.getLeft());
+		int uright = Math.min(from.getEast(), to.getLeft() + to.getWidth());
+		int utop = Math.min(from.getNorth(), to.getTop());
+		int ubottom = Math.max(from.getSouth(), to.getTop() - to.getHeight());
+		
+		for (int posx = uleft; posx <= uright; posx++) {
+			for (int posy = utop; posy >= ubottom; posy--) {
+				short[] sqr = from.getSquare(posx - from.left, from.top - posy);
+				if (sqr != null) {
+					to.setSquare(posx - to.left, to.top - posy, sqr);
+				}
+				String note = from.getSquareNotes(posx - from.left, from.top - posy);
+				if (note != null) {
+					to.setSquareNotes(posx - to.left, to.top - posy, note);
+				}
+			}
+		}
+	}
+	
+	public MapData resize(int top, int left, int width, int height) {
+		MapData to = new MapData(top, left, width, height);
+		to.setOffset(this.offx, this.offy, this.offset);
+		copy(this, to);
+		return to;
+	}
+	
 }

@@ -22,8 +22,8 @@ public class FlagAction extends MapAction {
         putValue(Action.SHORT_DESCRIPTION, "Show flags on the map");
         putValue(Action.LONG_DESCRIPTION, "Show Flags on the map");
         putValue(Action.SMALL_ICON, makeImageIcon("flag-16x16.gif"));
-        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control F"));
-        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_F));
+        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control L"));
+        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_L));
 	}
 	
 	@Override

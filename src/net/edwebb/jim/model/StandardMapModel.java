@@ -42,7 +42,7 @@ public class StandardMapModel extends AbstractMapModel {
 		this.currentCoord = new Coordinate(new Point(data.getOffX(), data.getOffY()), data.getOffset());
 		this.defaultCoord = new Coordinate(new Point(data.getOffX(), data.getOffY()), data.getOffset());
 		bounds = new Rectangle(data.getLeft(), data.getTop(), data.getWidth(), data.getHeight());
-		used = new Rectangle(data.getLeft() + data.getWest(), data.getTop() - data.getNorth(), data.getEast() - data.getWest(), data.getSouth() - data.getNorth());
+		used = new Rectangle(data.getWest(), data.getNorth(), data.getEast() - data.getWest(), data.getNorth() - data.getSouth());
 	}
 
 	@Override

@@ -27,8 +27,8 @@ public class RedoAction extends MapAction implements UndoListener {
         putValue(Action.SHORT_DESCRIPTION, "Redo change");
         putValue(Action.LONG_DESCRIPTION, "Redo a change to the map");
         putValue(Action.SMALL_ICON, makeImageIcon("redo-16x16.gif"));
-        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control R"));
-        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_R));
+        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("control Y"));
+        putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_Y));
         setEnabled(false);
 	}
 	

@@ -53,18 +53,24 @@ public class DiffMapModel extends AbstractMapModel {
 		if (primary == null || secondary == null) {
 			throw new IllegalArgumentException("Neither Map Model can be null");
 		}
-		this.primary = primary;
-		primary.setParent(this);
-		this.secondary = secondary;
 
 		this.offset = primary.getDefaultCoOrdinates().getOffset(secondary.getDefaultCoOrdinates()); 
-		//secondary.setDefaultCoOrdinates(primary.getDefaultCoOrdinates());
-		secondary.setParent(this);
 		
 		Point topLeft = new Point(Math.min(primary.getBounds().x, secondary.getUsed().x + offset.x), Math.max(primary.getBounds().y, secondary.getUsed().y + offset.y));
 		Point bottomRight = new Point(Math.max(primary.getBounds().x + primary.getBounds().width, secondary.getUsed().x + secondary.getUsed().width + offset.x), Math.min(primary.getBounds().y - primary.getBounds().height, secondary.getUsed().y - secondary.getUsed().height + offset.y));
 		Dimension widthHeight = new Dimension(bottomRight.x - topLeft.x + 1, topLeft.y - bottomRight.y + 1);  
 		bounds = new Rectangle(topLeft, widthHeight);
+
+		// Resize the primary map if the bounds of the combined maps is bigger
+		if (!bounds.equals(primary.getBounds())) {
+			this.primary = new StandardMapModel(primary.getSize(), primary.getData().resize(bounds.y, bounds.x, bounds.width, bounds.height), primary.getName());
+		} else {
+			this.primary = primary;
+		}
+		this.primary.setParent(this);
+
+		this.secondary = secondary;
+		this.secondary.setParent(this);
 	}
 	
 	@Override

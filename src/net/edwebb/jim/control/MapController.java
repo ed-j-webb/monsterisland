@@ -46,6 +46,7 @@ import net.edwebb.jim.control.actions.FlagAction;
 import net.edwebb.jim.control.actions.NewAction;
 import net.edwebb.jim.control.actions.OpenAction;
 import net.edwebb.jim.control.actions.RedoAction;
+import net.edwebb.jim.control.actions.ResizeAction;
 import net.edwebb.jim.control.actions.SaveAction;
 import net.edwebb.jim.control.actions.SaveDifferencesAction;
 import net.edwebb.jim.control.actions.SaveMergedAction;
@@ -123,6 +124,7 @@ public class MapController {
 		private JToggleButton cmdFlag;
 		private ScryeAction scryeAction;
 		private ExtractAction extractAction;
+		private ResizeAction resizeAction;
 		private TranslateAction translateAction;
 	
 	// The status bar	
@@ -640,6 +642,7 @@ public class MapController {
 			toolBar.add(new JToolBar.Separator());
 			//toolBar.add(getScryeAction());
 			toolBar.add(getExtractAction());
+			toolBar.add(getResizeAction());
 			toolBar.add(getSaveDifferencesAction());
 			toolBar.add(getSaveMergedAction());
 			toolBar.add(getTranslateAction());
@@ -794,6 +797,17 @@ public class MapController {
 			extractAction = new ExtractAction(this);
 		}
 		return extractAction;
+	}
+
+	/**
+	 * Returns the Resize action
+	 * @return the Resize action
+	 */
+	public ResizeAction getResizeAction() {
+		if (resizeAction == null) {
+			resizeAction = new ResizeAction(this);
+		}
+		return resizeAction;
 	}
 
 	/**
