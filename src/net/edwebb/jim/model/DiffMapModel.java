@@ -108,11 +108,7 @@ public class DiffMapModel extends AbstractMapModel {
 		for (int i = getBounds().x; i < getBounds().x + getBounds().width; i++) {
 			for (int j = getBounds().y; j > getBounds().y - getBounds().height; j--) {
 				p.move(i, j);
-				if (i == 231 && j == -135) {
-					System.out.println();
-				}
-				// If there is the terrain from the secondary map in the square's data then
-				// remove it.
+				// If there is the terrain from the secondary map in the square's data then remove it.
 				short[] combined = getSquare(p);
 				if (combined != null) {
 					short[] second = secondary.getSquare(p);
@@ -231,7 +227,7 @@ public class DiffMapModel extends AbstractMapModel {
 				x = new short[s.length + 1];
 				x[0] = 0;
 				x[1] = Decoder.shortLowByte(s[0]);
-				System.arraycopy(s, 1, x, 1, s.length-1);
+				System.arraycopy(s, 1, x, 2, s.length-1);
 				return x;
 			}
 		} else if (s == null || s.length == 0) {

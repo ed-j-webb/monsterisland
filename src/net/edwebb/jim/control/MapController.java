@@ -255,8 +255,6 @@ public class MapController {
 		if (undoManager == null) {
 			undoManager = new ChangeUndoManager(getModel());
 			undoManager.addUndoListener(getEdit());
-			//undoManager.addUndoListener(getView());
-			//undoManager.addUndoListener(getMiniMap());
 		}
 		return undoManager;
 	}

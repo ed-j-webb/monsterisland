@@ -126,13 +126,8 @@ class ExtractTask extends SwingWorker<Object, String> {
 	
 	@Override
 	protected Object doInBackground() throws Exception {
-
 		readTurns();
 		addToMap();
-
-		//refresh();
-		//getMiniMap().revalidate();
-		
 		return null;
 	}
 
@@ -153,7 +148,6 @@ class ExtractTask extends SwingWorker<Object, String> {
 				return;
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.out.println();
 			}
 			if (text == null || text.length() == 0) {
 				JOptionPane.showMessageDialog(action.getController().getFrame(), "Cannot find any text in " + files[i].getAbsolutePath());
@@ -172,7 +166,6 @@ class ExtractTask extends SwingWorker<Object, String> {
 				return;
 			} catch (Exception e) {
 				e.printStackTrace();
-				System.out.println();
 			}
 		}
 	}
@@ -202,7 +195,6 @@ class ExtractTask extends SwingWorker<Object, String> {
 		}
 
 		action.getController().setStatusLabel("Java Island Mapper");
-		//refresh();
 		
 		if (sb.length() > 0) {
 			sb.insert(0, "These sightings were not recognised:\n");

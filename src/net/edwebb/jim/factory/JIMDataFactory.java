@@ -118,10 +118,6 @@ public class JIMDataFactory implements DataFactory {
 				}
 			}
 			data.setDirty(false);
-			System.out.println(data.getNorth());
-			System.out.println(data.getSouth());
-			System.out.println(data.getEast());
-			System.out.println(data.getWest());
 			return data;
 		} finally {
 			dis.close();
