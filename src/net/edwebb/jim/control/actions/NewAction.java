@@ -44,7 +44,7 @@ public class NewAction extends MapAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		MapDimensions d = getMapDimensions();
-		int[] dims = d.getDimensions();
+		int[] dims = d.getDimensions(50, 10, 100, 100);
 		if (dims != null && dims.length == 4 && dims[2] > 0 && dims[3] > 0) {
 			getController().setModel(new StandardMapModel(getController().getModel().getSize(), new MapData(dims[0], dims[1], dims[2], dims[3]), "Unsaved.jim"));
 		}

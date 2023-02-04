@@ -47,14 +47,16 @@ public class ResizeAction extends MapAction {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+
+		MapModel model = getController().getModel();
+		if (model instanceof DiffMapModel) {
+			JOptionPane.showMessageDialog(getController().getFrame(), "Cannot resize a map that is being compared.");
+			return;
+		}
+
 		MapDimensions d = getMapDimensions();
-		int[] dims = d.getDimensions();
+		int[] dims = d.getDimensions(model.getBounds().y, model.getBounds().x, model.getBounds().width, model.getBounds().height);
 		if (dims != null && dims.length == 4 && dims[2] > 0 && dims[3] > 0) {
-			MapModel model = getController().getModel();
-			if (model instanceof DiffMapModel) {
-				JOptionPane.showMessageDialog(getController().getFrame(), "Cannot resize a map that is being compared.");
-				return;
-			}
 			Rectangle used = getController().getModel().getUsed();
 			
 			if (dims[0] < used.y || dims[1] > used.x ||  dims[2] + dims[0] < used.x + used.width ||dims[1] - dims[3] > used.y - used.height) {

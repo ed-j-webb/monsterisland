@@ -81,7 +81,12 @@ public class MapDimensions extends JDialog {
 	 * that the map should be created with.
 	 * @return an array of the top, left, width and height of the map
 	 */
-	public int[] getDimensions() {
+	public int[] getDimensions(int top, int left, int width, int height) {
+		getSpnTop().setValue(top);
+		getSpnLeft().setValue(left);
+		getSpnWidth().setValue(width);
+		getSpnHeight().setValue(height);
+
 		this.pack();
 		this.setVisible(true);
 		return new int[] {Integer.valueOf(getSpnTop().getValue().toString()), 
