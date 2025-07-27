@@ -199,8 +199,13 @@ public class JIMDataFactory implements DataFactory {
 				dos.writeShort(entry.getKey().x);
 				dos.writeShort(entry.getKey().y);
 				byte[] b = entry.getValue().getBytes("UTF-8");
-				dos.writeByte(-b.length);
-				dos.write(b);
+				if (b.length > 250) {
+					dos.write(-250);
+					dos.write(b, 0, 250);
+				} else {
+					dos.writeByte(-b.length);
+					dos.write(b);
+				}
 			}
 	
 			if (data.getOffset() != null) {

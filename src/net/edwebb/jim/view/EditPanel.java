@@ -24,6 +24,7 @@ import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
 import javax.swing.SpringLayout;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.DefaultStyledDocument;
 
 import net.edwebb.jim.MapConstants.ChangeType;
 import net.edwebb.jim.model.FeatureComboBoxModel;
@@ -359,6 +360,10 @@ public class EditPanel extends JPanel implements MapChangeListener, UndoListener
 			txtNotes = new JTextArea(3, 10);
 			txtNotes.setPreferredSize(new Dimension(100, 100));
 			SpringUtilities.fixHeight(txtNotes);
+
+			DefaultStyledDocument doc = new DefaultStyledDocument();
+            doc.setDocumentFilter(new DocumentSizeFilter(250));
+            txtNotes.setDocument(doc);			
 		}
 		return txtNotes;
 	}
