@@ -25,4 +25,6 @@ Change Log
 2.0.0 - Removed scrying action and replaced with extract action
       - Fix bug in save actions when filename is missing suffix
       
-2.0.1 - Fix bug when square note is longer than 255 characters. Limited notes to 250 characters. 
+2.0.1 - Fix bug when square note is longer than 255 characters. Limited notes to 250 characters.
+
+2.0.2 - Fix the REAL bug where square note is longer than 127 characters. Limited notes to 125 characters. 
