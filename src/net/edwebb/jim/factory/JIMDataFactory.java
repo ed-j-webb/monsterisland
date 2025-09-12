@@ -97,6 +97,10 @@ public class JIMDataFactory implements DataFactory {
 				x = dis.readShort();
 				y = dis.readShort();
 				z = dis.readByte();
+				System.out.println(x + "," + y);
+				if (x == 168 && y == 113) {
+					System.out.println("!");
+				}
 				if (z < 0) {
 					byte[] b = new byte[-z];
 					dis.readFully(b);
@@ -199,9 +203,9 @@ public class JIMDataFactory implements DataFactory {
 				dos.writeShort(entry.getKey().x);
 				dos.writeShort(entry.getKey().y);
 				byte[] b = entry.getValue().getBytes("UTF-8");
-				if (b.length > 250) {
-					dos.write(-250);
-					dos.write(b, 0, 250);
+				if (b.length > 125) {
+					dos.write(-125);
+					dos.write(b, 0, 125);
 				} else {
 					dos.writeByte(-b.length);
 					dos.write(b);

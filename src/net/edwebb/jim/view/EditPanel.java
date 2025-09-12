@@ -362,8 +362,8 @@ public class EditPanel extends JPanel implements MapChangeListener, UndoListener
 			SpringUtilities.fixHeight(txtNotes);
 
 			DefaultStyledDocument doc = new DefaultStyledDocument();
-            doc.setDocumentFilter(new DocumentSizeFilter(250));
-            txtNotes.setDocument(doc);			
+            doc.setDocumentFilter(new DocumentSizeFilter(125));
+            txtNotes.setDocument(doc);
 		}
 		return txtNotes;
 	}
