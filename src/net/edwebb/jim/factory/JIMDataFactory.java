@@ -98,11 +98,14 @@ public class JIMDataFactory implements DataFactory {
 				y = dis.readShort();
 				z = dis.readByte();
 				System.out.println(x + "," + y);
-				if (x == 168 && y == 113) {
-					System.out.println("!");
-				}
 				if (z < 0) {
-					byte[] b = new byte[-z];
+					int len = 0;
+					if (z == -127) {
+						len = dis.readShort();
+					} else {
+						len = -z;
+					}
+					byte[] b = new byte[len];
 					dis.readFully(b);
 					if (b[0] == 26) {
 						// chr(26) substitute means the coordinate offset is stored in this record
@@ -204,8 +207,9 @@ public class JIMDataFactory implements DataFactory {
 				dos.writeShort(entry.getKey().y);
 				byte[] b = entry.getValue().getBytes("UTF-8");
 				if (b.length > 125) {
-					dos.write(-125);
-					dos.write(b, 0, 125);
+					dos.writeByte(-127);
+					dos.writeShort(b.length);
+					dos.write(b);
 				} else {
 					dos.writeByte(-b.length);
 					dos.write(b);

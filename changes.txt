@@ -27,4 +27,7 @@ Change Log
       
 2.0.1 - Fix bug when square note is longer than 255 characters. Limited notes to 250 characters.
 
-2.0.2 - Fix the REAL bug where square note is longer than 127 characters. Limited notes to 125 characters. 
+2.0.2 - Fix the REAL bug where square note is longer than 127 characters. Limited notes to 125 characters.
+
+2.1.0 - Notes can now be up to 32,000 characters. Hopefully that's enough for anyone. Maps with notes longer than 125 characters will not open in older versions.
+ 

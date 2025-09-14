@@ -20,6 +20,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JToggleButton;
 import javax.swing.SpringLayout;
@@ -71,7 +72,8 @@ public class EditPanel extends JPanel implements MapChangeListener, UndoListener
 
 	private JPanel editor;
 		private JComboBox<Terrain> cmbTerrain;
-		private JTextArea txtNotes;
+		private JScrollPane scrNotes;
+			private JTextArea txtNotes;
 		private JButton cmdNotes;
 		private JPanel panFlags;
 			private JToggleButton[] cmdFlag;
@@ -245,18 +247,6 @@ public class EditPanel extends JPanel implements MapChangeListener, UndoListener
 		}
 	}
 
-//	private void setFlags(short flags) {
-//		for (int i = 0; i < getCmdFlag().length; i++) {
-//			short id = ((Flag)getCmdFlag()[i].getClientProperty(FEATURE)).getId();
-//			id = (short)(Math.pow(2, id));
-//			if ((flags & id) > 0) {
-//				getCmdFlag()[i].setSelected(true);
-//			} else {
-//				getCmdFlag()[i].setSelected(false);
-//			}
-//		}
-//	}
-	
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
@@ -275,7 +265,7 @@ public class EditPanel extends JPanel implements MapChangeListener, UndoListener
 			editor.setBorder(getTitle());
 			editor.add(getFlags());
 			editor.add(getTerrainComboBox());
-			editor.add(getNotesBox());
+			editor.add(getNotesScroll());
 			editor.add(getNotesButton());
 			SpringUtilities.makeCompactGrid(editor, editor.getComponentCount(), 1, 5, 5, 5, 5);
 		}
@@ -355,14 +345,23 @@ public class EditPanel extends JPanel implements MapChangeListener, UndoListener
 		return cmdMergeFlag;
 	}
 	
+	private JScrollPane getNotesScroll() {
+		if (scrNotes == null) {
+			scrNotes = new JScrollPane(getNotesBox(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+			scrNotes.setPreferredSize(new Dimension(100, 100));
+			SpringUtilities.fixHeight(scrNotes);
+		}
+		return scrNotes;
+	}
+	
 	private JTextArea getNotesBox() {
 		if (txtNotes == null) {
 			txtNotes = new JTextArea(3, 10);
-			txtNotes.setPreferredSize(new Dimension(100, 100));
-			SpringUtilities.fixHeight(txtNotes);
+			//txtNotes.setPreferredSize(new Dimension(100, 100));
+			//SpringUtilities.fixHeight(txtNotes);
 
 			DefaultStyledDocument doc = new DefaultStyledDocument();
-            doc.setDocumentFilter(new DocumentSizeFilter(125));
+            doc.setDocumentFilter(new DocumentSizeFilter(32000));
             txtNotes.setDocument(doc);
 		}
 		return txtNotes;
